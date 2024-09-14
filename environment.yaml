@@ -1,0 +1,13 @@
+name: environment_tip_generator  
+channels:
+  - conda-forge
+dependencies:
+  - pathlib
+  - litellm
+  - python-dotenv
+  - pip
+  - pdf2image
+  - pytesseract
+  - pip:
+    - getpaper
+    - just-agents
