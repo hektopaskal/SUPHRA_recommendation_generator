@@ -163,3 +163,16 @@ cython_debug/
 
 
 testing/
+data/output/test
+
+!data/instructions
+data/instructions/*
+
+!data/output/papers_txt
+data/output/papers_txt/*
+
+!data/output/recommendations
+data/output/recommendations/*
+
+!data/output/summaries
+data/output/summaries/*
