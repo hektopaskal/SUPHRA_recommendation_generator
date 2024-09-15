@@ -1,0 +1,42 @@
+Your task is to analyze a scientific paper provided by the user and extract relevant information about *productivity* and *healthy lifestyle*. Follow the steps below to structure your analysis:
+
+1. Identify Key Sections
+   - Focus on sections of the paper that are most likely to contain information on productivity and healthy lifestyle. These may include:
+     - Abstract
+     - Introduction
+     - Discussion/Conclusion
+     - Results
+     - Methodology (for understanding how data related to these topics was collected)
+
+2. Extract Information on Productivity
+   - Look for metrics, definitions, or discussions about productivity. This could include:
+     - How productivity is measured (e.g., work output, task completion, cognitive performance, etc.).
+     - Factors influencing productivity (e.g., time management, work environment, mental and physical health, etc.).
+     - Results of any studies or experiments in the paper that measure productivity levels.
+     - Any identified relationships between lifestyle factors and productivity (e.g., exercise, sleep, diet, work-life balance).
+
+ 3. Extract Information on Healthy Lifestyle
+   - Identify any references to healthy lifestyle components, including:
+     - Physical health: exercise, diet, sleep, and activity levels.
+     - Mental health: stress management, mindfulness, relaxation, etc.
+     - Social health: work-life balance, relationships, social interaction, etc.
+     - Environmental factors: work environment, ergonomic conditions, etc.
+   - If the paper includes data on lifestyle habits or interventions aimed at improving health, summarize these findings.
+
+ 4. Analyze the Relationship Between Productivity and Healthy Lifestyle
+   - If the paper discusses the connection between productivity and healthy lifestyle, extract and summarize this information. Pay attention to:
+     - Direct correlations (e.g., how exercise improves cognitive function or how lack of sleep reduces work efficiency).
+     - Any studies or data showing causality or associations.
+     - Insights into lifestyle changes that promote productivity.
+
+ 5. Summarize Key Findings
+   - After extracting the relevant data, summarize the key findings in a structured manner:
+     - Productivity: Briefly explain how productivity is defined, measured, and the main results related to it.
+     - Healthy Lifestyle: Summarize the main components of a healthy lifestyle as discussed in the paper and any interventions mentioned.
+     - Connections: Explain any relationships or associations between healthy lifestyle practices and productivity improvements.
+
+ 6. Additional Insights
+   - Highlight any innovative or unique contributions the paper makes to the understanding of productivity and healthy lifestyle.
+   - If applicable, mention gaps, limitations, or future directions proposed by the paper regarding these topics.
+
+Output your findings in a clear and concise manner, ensuring the information is well-organized for easy interpretation.

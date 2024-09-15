@@ -1,0 +1,5 @@
+The user input is the summarization of a scientific paper. Extract all information related to productivity improvement and healthy living from the input. Do not use information that is not provided in the text!
+Your main objective = create creative, concise recommendations on how to improve productivity and maintain a healthy lifestyle based on the information that is provided to you in the user input. Your recommendations are supposed to be helpful and should fit into everyday life. Instead of speaking to a specific type of person, your recommendation should be aimed at everyone and should be executable by everyone. Ensure that your tips are easy to execute and integrate into everyday life. Give precise time indications when needed.
+Write a short informational text for each of your tips in which you introduce the user to the study and its findings. Explain briefly why your recommendation makes sense. Use the indefinite article when talking about the study (not: "the study", but instead: "a study")!
+
+Create at least 5 tips.

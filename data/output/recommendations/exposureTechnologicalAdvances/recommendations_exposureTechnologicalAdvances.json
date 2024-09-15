@@ -1,0 +1,96 @@
+{
+    "id": "chatcmpl-bc7b94e8-7364-4218-8c46-1f82f6800f9c",
+    "choices": [
+        {
+            "finish_reason": "tool_calls",
+            "index": 0,
+            "message": {
+                "content": null,
+                "role": "assistant",
+                "tool_calls": [
+                    {
+                        "function": {
+                            "arguments": "{\"list_of_recommendation_sets\": [{\"activity_type\": \"Time Management\", \"category\": \"Work\", \"daytime\": \"Not relevant\", \"focus\": \"Work\", \"goal\": \"Augment\", \"information\": \"Technological advances can improve work engagement. Studies have shown that exposure to technological advances can have a positive effect on work engagement, especially for younger workers. (Source: Journal of Occupational Health, 2024, 66(1), uiae003)\", \"tip\": \"Use technology to automate repetitive tasks and manage work demands effectively. Allocate 30 minutes each week to explore new tools and apps that can streamline your workflow.\", \"weekday\": \"Not relevant\"}, {\"activity_type\": \"Cognitive\", \"category\": \"Work\", \"daytime\": \"Not relevant\", \"focus\": \"Work\", \"goal\": \"Augment\", \"information\": \"Providing training and development opportunities can help workers manage their work demands and allocate resources effectively. (Source: Journal of Occupational Health, 2024, 66(1), uiae003)\", \"tip\": \"Take online courses or attend workshops to improve your time management and productivity skills. Allocate 1 hour each day to learn new skills and apply them to your work.\", \"weekday\": \"Not relevant\"}, {\"activity_type\": \"Time Management\", \"category\": \"Work\", \"daytime\": \"Not relevant\", \"focus\": \"Work\", \"goal\": \"Augment\", \"information\": \"Regular monitoring and evaluation of work engagement can help identify areas for improvement. (Source: Journal of Occupational Health, 2024, 66(1), uiae003)\", \"tip\": \"Set aside 30 minutes each week to review your work progress and identify areas for improvement. Use this time to adjust your schedule and prioritize tasks effectively.\", \"weekday\": \"Not relevant\"}, {\"activity_type\": \"Cognitive\", \"category\": \"Work\", \"daytime\": \"Not relevant\", \"focus\": \"Work\", \"goal\": \"Augment\", \"information\": \"Encouraging older workers to adopt technological advances can help them manage their work demands and allocate resources effectively. (Source: Journal of Occupational Health, 2024, 66(1), uiae003)\", \"tip\": \"If you are an older worker, take the time to learn new technological skills. Allocate 1 hour each day to practice using new tools and apps that can help you streamline your workflow.\", \"weekday\": \"Not relevant\"}, {\"activity_type\": \"Social\", \"category\": \"Work\", \"daytime\": \"Not relevant\", \"focus\": \"Work\", \"goal\": \"Augment\", \"information\": \"Providing support to workers who need it can help improve work engagement. (Source: Journal of Occupational Health, 2024, 66(1), uiae003)\", \"tip\": \"Take the time to ask your colleagues if they need help with their workload. Allocate 30 minutes each week to provide support and guidance to those who need it.\", \"weekday\": \"Not relevant\"}]}",
+                            "name": "format_output"
+                        },
+                        "id": "call_xyvj",
+                        "type": "function"
+                    }
+                ],
+                "function_call": null
+            }
+        }
+    ],
+    "created": 1726415652,
+    "model": "groq/llama-3.1-70b-versatile",
+    "object": "chat.completion",
+    "system_fingerprint": "fp_5c5d1b5cfb",
+    "usage": {
+        "completion_tokens": 627,
+        "prompt_tokens": 1934,
+        "total_tokens": 2561,
+        "queue_time": 2.613131202,
+        "prompt_time": 0.779364901,
+        "completion_time": 2.514925007,
+        "total_time": 3.294289908
+    },
+    "service_tier": null,
+    "x_groq": {
+        "id": "req_01j7v68hx8eny8ncjpd3psykwr"
+    },
+    "instruction": "data/instructions/cgpt_instruction.txt",
+    "output": {
+        "list_of_recommendation_sets": [
+            {
+                "activity_type": "Time Management",
+                "category": "Work",
+                "daytime": "Not relevant",
+                "focus": "Work",
+                "goal": "Augment",
+                "information": "Technological advances can improve work engagement. Studies have shown that exposure to technological advances can have a positive effect on work engagement, especially for younger workers. (Source: Journal of Occupational Health, 2024, 66(1), uiae003)",
+                "tip": "Use technology to automate repetitive tasks and manage work demands effectively. Allocate 30 minutes each week to explore new tools and apps that can streamline your workflow.",
+                "weekday": "Not relevant"
+            },
+            {
+                "activity_type": "Cognitive",
+                "category": "Work",
+                "daytime": "Not relevant",
+                "focus": "Work",
+                "goal": "Augment",
+                "information": "Providing training and development opportunities can help workers manage their work demands and allocate resources effectively. (Source: Journal of Occupational Health, 2024, 66(1), uiae003)",
+                "tip": "Take online courses or attend workshops to improve your time management and productivity skills. Allocate 1 hour each day to learn new skills and apply them to your work.",
+                "weekday": "Not relevant"
+            },
+            {
+                "activity_type": "Time Management",
+                "category": "Work",
+                "daytime": "Not relevant",
+                "focus": "Work",
+                "goal": "Augment",
+                "information": "Regular monitoring and evaluation of work engagement can help identify areas for improvement. (Source: Journal of Occupational Health, 2024, 66(1), uiae003)",
+                "tip": "Set aside 30 minutes each week to review your work progress and identify areas for improvement. Use this time to adjust your schedule and prioritize tasks effectively.",
+                "weekday": "Not relevant"
+            },
+            {
+                "activity_type": "Cognitive",
+                "category": "Work",
+                "daytime": "Not relevant",
+                "focus": "Work",
+                "goal": "Augment",
+                "information": "Encouraging older workers to adopt technological advances can help them manage their work demands and allocate resources effectively. (Source: Journal of Occupational Health, 2024, 66(1), uiae003)",
+                "tip": "If you are an older worker, take the time to learn new technological skills. Allocate 1 hour each day to practice using new tools and apps that can help you streamline your workflow.",
+                "weekday": "Not relevant"
+            },
+            {
+                "activity_type": "Social",
+                "category": "Work",
+                "daytime": "Not relevant",
+                "focus": "Work",
+                "goal": "Augment",
+                "information": "Providing support to workers who need it can help improve work engagement. (Source: Journal of Occupational Health, 2024, 66(1), uiae003)",
+                "tip": "Take the time to ask your colleagues if they need help with their workload. Allocate 30 minutes each week to provide support and guidance to those who need it.",
+                "weekday": "Not relevant"
+            }
+        ]
+    }
+}

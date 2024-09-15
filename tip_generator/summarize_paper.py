@@ -57,7 +57,7 @@ def summarize_paper(input_folder: Path, output_folder: Path, modelname: str, ins
         os.makedirs(output_path, exist_ok=True)
         with open(f"{output_path}/{folder}.txt", "w") as f:
             f.write(line_breaker(response.choices[0].message.content))
-        print(f"Summary saved at {output_path}\n\n")
+        print(f"Summary saved at {output_path}\n")
 
 
 summarize_paper(

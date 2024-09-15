@@ -125,11 +125,11 @@ def generate_recommendations(input_folder: Path, output_folder: Path, modelname:
         with open(os.path.join(output_path, output_file), "w") as json_file:
             json.dump(output, json_file, indent=4)
 
-        print(f'File saved at {output_path} as {output_file}')
+        print(f'File saved at {output_path} as {output_file}\n')
 
 generate_recommendations(
     input_folder="data/output/summaries",
     output_folder="data/output/recommendations",
-    modelname="gpt-3.5-turbo",
+    modelname="groq/llama-3.1-70b-versatile",
     instruction_file="data/instructions/cgpt_instruction.txt"
 )
