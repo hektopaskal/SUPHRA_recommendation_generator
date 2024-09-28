@@ -42,9 +42,50 @@ def ocr_fallback(pdf_file_path, txt_file_path):
     with open(txt_file_path, 'w', encoding='utf-8') as output_file:                   #utf-16/32????
         output_file.write(ocr_text)
 
-# Main function to process all PDF files
+# Takes a single PDF file and converts it into a txt file
+def convert_pdf(
+    input_file: str = typer.Argument(..., help="Path to the input PDF file"),
+    output_dir: str = typer.Argument(..., help="Output directory for processed file"),
+    num_pages: Optional[int] = typer.Option(None, "--num-pages", "-n", help="Number of pages to process (default: all)")
+):
+    """
+    Process a single PDF file and save the result in the output directory.
+    """
+    # Create the output folder if it doesn't exist
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    file_name = os.path.basename(input_file)
+    output_txt_path = os.path.join(
+        output_dir, file_name.replace(".pdf", ""), file_name.replace(".pdf", ".txt"))
+
+    print(f"Processing {input_file}...")
+
+    # Step 1: Attempt to parse using the getpaper module
+    parse_try = try_parse_paper(
+        paper=Path(input_file),
+        folder=Path(output_dir),
+        parser=PDFParser.pdf_miner,
+        recreate_parent=False,
+        cleaning=True,
+        subfolder=False,
+        mode="single",
+        strategy="auto",
+        pdf_infer_table_structure=True,
+        include_page_breaks=False
+    )
+
+    # Step 2: Check if the parsed text is empty or garbled
+    if is_empty(output_txt_path):
+        print(f"No text detected in {file_name}, falling back to OCR...")
+        # Step 3: Use OCR as a fallback
+        ocr_fallback(input_file, output_txt_path)
+
+    print(f"Finished processing {file_name}. Saved to {output_txt_path}.")
+
+# Takes a folder containing PDF files and converts into txt files
 @app.command()
-def process_pdfs(
+def convert_pdfs(
     input_dir: str = typer.Argument(..., help="Input directory containing PDF files"),
     output_dir: str = typer.Argument(..., help="Output directory for processed files"),
     num_pages: Optional[int] = typer.Option(None, "--num-pages", "-n", help="Number of pages to process (default: all)"),
