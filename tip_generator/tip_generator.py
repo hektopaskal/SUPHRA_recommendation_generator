@@ -112,6 +112,11 @@ def generate_recommendations(input_folder: Path, output_folder: Path, modelname:
             print(f"Unexpected error: {e}")
             return "An unexpected error occured."
 
+        # implement recommendation
+        
+
+
+
         # extract completion and add to output-json as 'output'
         output = response.to_dict()
         output["instruction"] = instruction_file # to keep track of used instruction file

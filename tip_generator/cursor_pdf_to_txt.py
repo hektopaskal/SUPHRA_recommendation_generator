@@ -90,9 +90,11 @@ def process_pdfs(
             print(
                 f"Finished processing {file_name}. Saved to {output_txt_path}.\n")
 
+
+
 # New subcommand to search for papers using Semanticscholar
 @app.command()
-def search_papers(
+def search_papers_test(
     query: str = typer.Argument(..., help="Search query for papers"),
     limit: int = typer.Option(10, "--limit", "-l", help="Number of results to return")
 ):

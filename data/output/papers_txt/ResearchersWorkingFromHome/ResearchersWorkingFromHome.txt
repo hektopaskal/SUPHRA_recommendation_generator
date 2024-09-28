@@ -1,0 +1,699 @@
+RESEARCH ARTICLE
+
+Researchers working from home: Benefits and challenges
+
+Balazs AczelID
+
+1*, Marton Kovacs1,2, Tanja van der Lippe3, Barnabas Szaszi1
+
+1 Institute of Psychology, ELTE Eotvos Lorand University, Budapest, Hungary, 2 Doctoral School of Psychology, ELTE Eotvos Lorand University, Budapest, Hungary, 3 Department of Sociology, Utrecht University, Utrecht, The Netherlands
+
+* aczel.balazs@ppk.elte.hu
+
+Abstract
+
+The flexibility allowed by the mobilization of technology disintegrated the traditional work-life boundary for most professionals. Whether working from home is the key or impediment to academics’ efficiency and work-life balance became a daunting question for both scientists and their employers. The recent pandemic brought into focus the merits and challenges of working from home on a level of personal experience. Using a convenient sampling, we sur- veyed 704 academics while working from home and found that the pandemic lockdown decreased the work efficiency for almost half of the researchers but around a quarter of them were more efficient during this time compared to the time before. Based on the gath- ered personal experience, 70% of the researchers think that in the future they would be simi- larly or more efficient than before if they could spend more of their work-time at home. They indicated that in the office they are better at sharing thoughts with colleagues, keeping in touch with their team, and collecting data, whereas at home they are better at working on their manuscript, reading the literature, and analyzing their data. Taking well-being also into account, 66% of them would find it ideal to work more from home in the future than they did before the lockdown. These results draw attention to how working from home is becoming a major element of researchers’ life and that we have to learn more about its influencer factors and coping tactics in order to optimize its arrangements.
+
+Introduction
+
+Fleeing from the Great Plague that reached Cambridge in 1665, Newton retreated to his coun- tryside home where he continued working for the next year and a half. During this time, he developed his theories on calculus, optics, and the law of gravitation—fundamentally changing the path of science for centuries. Newton himself described this period as the most productive time of his life [1]. Is working from home indeed the key to efficiency for scientists also in modern times? A solution for working without disturbance by colleagues and being able to manage a work-life balance? What personal and professional factors influence the relation between productivity and working from home? These are the main questions that the present
+
+a1111111111
+
+a1111111111
+
+a1111111111
+
+a1111111111
+
+a1111111111
+
+OPEN ACCESS
+
+Citation: Aczel B, Kovacs M, van der Lippe T, Szaszi B (2021) Researchers working from home: Benefits and challenges. PLoS ONE 16(3): e0249127. https://doi.org/10.1371/journal. pone.0249127
+
+Editor: Johnson Chun-Sing Cheung, The University of Hong Kong, HONG KONG
+
+Received: September 24, 2020
+
+Accepted: March 11, 2021
+
+Published: March 25, 2021
+
+Peer Review History: PLOS recognizes the benefits of transparency in the peer review process; therefore, we enable the publication of all of the content of peer review and author responses alongside final, published articles. The editorial history of this article is available here: https://doi.org/10.1371/journal.pone.0249127
+
+Copyright: © 2021 Aczel et al. This is an open access article distributed under the terms of the Creative Commons Attribution License, which permits unrestricted use, distribution, and reproduction in any medium, provided the original author and source are credited.
+
+Data Availability Statement: All research materials, the collected raw and processed anonymous data, just as well the code for data management and statistical analyses are publicly
+
+PLOS ONE | https://doi.org/10.1371/journal.pone.0249127 March 25, 2021
+
+1 / 13
+
+PLOS ONEshared on the OSF page of the project: OSF: https:// osf.io/v97fy/.
+
+paper aims to tackle. The Covid-19 pandemic provides a unique opportunity to analyze the implications of working from home in great detail.
+
+Researchers working from home
+
+Funding: TVL’s contribution is part of the research program Sustainable Cooperation – Roadmaps to Resilient Societies (SCOOP). She is grateful to the Netherlands Organization for Scientific Research (NWO) and the Dutch Ministry of Education, Culture and Science (OCW) for their support in the context of its 2017 Gravitation Program (grant number 024.003.025).
+
+Competing interests: The authors have declared that no competing interests exist.
+
+Working away from the traditional office is increasingly an option in today’s world. The phenomenon has been studied under numerous, partially overlapping terms, such as telecom- muting, telework, virtual office, remote work, location independent working, home office. In this paper, we will use ‘working from home’ (WFH), a term that typically covers working from any location other than the dedicated area provided by the employer.
+
+The practice of WFH and its effect on job efficiency and well-being are reasonably well explored outside of academia [2, 3]. Internet access and the increase of personal IT infrastruc- ture made WFH a growing trend throughout the last decades [4]. In 2015, over 12% of EU workers [5] and near one-quarter of US employees [6] worked at least partly from home. A recent survey conducted among 27,500 millennials and Gen Z-s indicated that their majority would like to work remotely more frequently [7]. The literature suggests that people working from home need flexibility for different reasons. Home-working is a typical solution for those who need to look after dependent children [8] but many employees just seek a better work-life balance [7] and the comfort of an alternative work environment [9].
+
+Non-academic areas report work-efficiency benefits for WFH but they also show some downsides of this arrangement. A good example is the broad-scale experiment in which call center employees were randomly assigned to work from home or in the office for nine months [10]. A 13% work performance increase was found in the working from home group. These workers also reported improved work satisfaction. Still, after the experiment, 50% of them pre- ferred to go back to the office mainly because of feeling isolated at home.
+
+Home-working has several straightforward positive aspects, such as not having to com- mute, easier management of household responsibilities [11] and family demands [12], along with increased autonomy over time use [13, 14], and fewer interruptions [15, 16]. Personal comfort is often listed as an advantage of the home environment [e.g., 15], though setting up a home office comes with physical and infrastructural demands [17]. People working from home consistently report greater job motivation and satisfaction [4, 11, 18, 19] which is proba- bly due to the greater work-related control and work-life flexibility [20]. A longitudinal nation- ally representative sample of 30,000 households in the UK revealed that homeworking is positively related with leisure time satisfaction [21], suggesting that people working from home can allocate more time for leisure activities.
+
+Often-mentioned negative aspects of WFH include being disconnected from co-workers, experiencing isolation due to the physical and social distance to team members [22, 23]. Also, home-working employees reported more difficulties with switching off and they worked beyond their formal working hours [4]. Working from home is especially difficult for those with small children [24], but intrusion from other family members, neighbours, and friends were also found to be major challenges of WFH [e.g., 17]. Moreover, being away from the office may also create a lack of visibility and increases teleworkers’ fear that being out of sight limits opportunities for promotion, rewards, and positive performance reviews [25].
+
+Importantly, increased freedom imposes higher demands on workers to control not just the
+
+environment, but themselves too. WFH comes with the need to develop work-life boundary control tactics [26] and to be skilled at self-discipline, self-motivation, and good time manage- ment [27]. Increased flexibility can easily lead to multitasking and work-family role blurring [28]. Table 1 provides non-comprehensive lists of mostly positive and mostly negative conse- quences of WFH, based on the literature reviewed here.
+
+Compared to the private sector, our knowledge is scarce about how academics experience working from home. Researchers in higher education institutes work in very similar arrange- ments. Typically, they are expected to personally attend their workplace, if not for teaching or
+
+PLOS ONE | https://doi.org/10.1371/journal.pone.0249127 March 25, 2021
+
+2 / 13
+
+PLOS ONEResearchers working from home
+
+Table 1. Positive and negative consequences of WFH.
+
+Mostly positive
+
+Less commuting
+
+More control over time
+
+More autonomy
+
+Less office
+
+-
+
+related distractions
+
+More comfortable environment
+
+More flexibility with domestic tasks
+
+https://doi.org/10.1371/journal.pone.0249127.t001
+
+Mostly negative
+
+Isolation from colleagues
+
+Less defined work
+
+-
+
+life boundaries
+
+Higher need for self
+
+-
+
+discipline
+
+Reliance on private infrastructure
+
+Communication difficulties with colleagues
+
+supervision, then for meetings or to confer with colleagues. In the remaining worktime, they work in their lab or, if allowed, they may choose to do some of their tasks remotely. Along with the benefits on productivity when working from home, academics have already experi- enced some of its drawbacks at the start of the popularity of personal computers. As Snizek observed in the ‘80s, “(f)aculty who work long hours at home using their microcomputers indi- cate feelings of isolation and often lament the loss of collegial feedback and reinforcement” [page 622, 29].
+
+Until now, the academics whose WFH experience had been given attention were mostly
+
+those participating in online distance education [e.g., 30, 31]. They experienced increased autonomy, flexibility in workday schedule, the elimination of unwanted distractions [32], along with high levels of work productivity and satisfaction [33], but they also observed inade- quate communication and the lack of opportunities for skill development [34]. The Covid-19 pandemic provided an opportunity to study the WFH experience of a greater spectrum of aca- demics, since at one point most of them had to do all their work from home.
+
+We have only fragmented knowledge about the moderators of WFH success. We know that control over time is limited by the domestic tasks one has while working from home. The view that women’s work is more influenced by family obligations than men’s is consistently shown in the literature [e.g., 35–37]. Sullivan and Lewis [38] argued that women who work from home are able to fulfil their domestic role better and manage their family duties more to their satisfaction, but that comes at the expense of higher perceived work–family conflict [see also 39]. Not surprisingly, during the COVID-19 pandemic, female scientists suffered a greater dis- ruption than men in their academic productivity and time spent on research, most likely due to demands of childcare [40, 41].
+
+In summary, until recently, the effect of WFH on academics’ life and productivity received limited attention. However, during the recent pandemic lockdown, scientists, on an unprece- dented scale, had to find solutions to continue their research from home. The situation unavoidably brought into focus the merits and challenges of WFH on a level of personal expe- rience. Institutions were compelled to support WFH arrangements by adequate regulations, services, and infrastructure. Some researchers and institutions might have found benefits in the new arrangements and may wish to continue WFH in some form; for others WFH brought disproportionately larger challenges. The present study aims to facilitate the systematic explo- ration and support of researchers’ efficiency and work-life balance when working from home.
+
+Materials and methods
+
+Our study procedure and analysis plan were preregistered at https://osf.io/jg5bz (all deviations from the plan are listed in S1 File). The survey included questions on research work efficiency, work-life balance, demographics, professional and personal background information. The study protocol has been approved by the Institutional Review Board from Eotvos Lorand
+
+PLOS ONE | https://doi.org/10.1371/journal.pone.0249127 March 25, 2021
+
+3 / 13
+
+PLOS ONEResearchers working from home
+
+University, Hungary (approval number: 2020/131). The Transparency Report of the study, the complete text of the questionnaire items and the instructions are shared at our OSF repository: https://osf.io/v97fy/.
+
+Sampling
+
+As the objective of this study was to gain insight about researchers’ experience of WFH, we aimed to increase the size and diversity of our sample rather than ascertaining the representa- tiveness of our sample. Therefore, we distributed our online survey link among researchers in professional newsletters, university mailing lists, on social media, and by sending group-emails to authors (additional details about sampling are in S1 File). As a result of the nature of our sampling strategy, it is not known how many researchers have seen our participation request. Additionally, we did not collect the country of residence of the respondents. Responses ana- lyzed in this study were collected between 2020-04-24 and 2020-07-13. Overall, 858 individuals started the survey and 154 were excluded because they did not continue the survey beyond the first question. As a result, 704 respondents were included in the analysis.
+
+Procedure
+
+We sent the questionnaire individually to each of the respondents through the Qualtrics Mailer service. Written informed consent and access to the preregistration of the research was pro- vided to every respondent before starting the survey. Then, respondents who agreed to partici- pate in the study could fill out the questionnaire. To encourage participation, we offered that upon completion they can enter a lottery to win a 100 USD voucher.
+
+Materials
+
+This is a general description of the survey items. The full survey with the display logic and exact phrasing of the items is transported from Qualtrics and uploaded to the projects’ OSF page: https://osf.io/8ze2g/.
+
+Efficiency of research work. The respondents were asked to compare the efficiency of their research work during the lockdown to their work before the lockdown. They were also asked to use their present and previous experience to indicate whether working more from home in the future would change the efficiency of their research work compared to the time before the lockdown. For both questions, they could choose among three options: “less effi- cient”; “more efficient”, and “similarly efficient”.
+
+Comparing working from home to working in the office. Participants were asked to compare working from home to working from the office. For this question they could indicate their preference on a 7-point dimension (1: At home; 7: In the office), along 15 efficiency or well-being related aspects of research work (e.g., working on the manuscript, maintaining work-life balance). These aspects were collected in a pilot study conducted with 55 researchers who were asked to indicate in free text responses the areas in which their work benefits/suffers when working from home. More details of the pilot study are provided in S1 File.
+
+Actual and ideal time spent working from home. To study the actual and ideal time spent working from home, researcher were asked to indicate on a 0–100% scale (1) what per- centage of their work time they spent working from home before the pandemic and (2) how much would be ideal for them working from home in the future concerning both research effi- ciency and work-life balance.
+
+Feasibility of working more from home. With simple Yes/No options, we asked the respondents to indicate whether they think that working more from home would be feasible
+
+PLOS ONE | https://doi.org/10.1371/journal.pone.0249127 March 25, 2021
+
+4 / 13
+
+PLOS ONEResearchers working from home
+
+considering all their other duties (education, administration, etc.) and the given circumstances at home (infrastructure, level of disturbance).
+
+Background information. Background questions were asked by providing preset lists concerning their academic position (e.g., full professor), area of research (e.g., social sciences), type of workplace (e.g., purely research institute), gender, age group, living situation (e.g., sin- gle-parent with non-adult child(ren)), and the age and the number of their children.
+
+The respondents were also asked to select one of the offered options to indicate: whether or not they worked more from home during the coronavirus lockdown than before; whether it is possible for them to collect data remotely; whether they have education duties at work; if their research requires intensive team-work; whether their home office is fully equipped; whether their partner was also working from home during the pandemic; how far their office is from home; whether they had to do home-schooling during the pandemic; whether there was some- one else looking after their child(ren) during their work from home in lockdown. When the question did not apply to them, they could select the ‘NA’ option as well.
+
+Data preprocessing and analyses
+
+All the data preprocessing and analyses were conducted in R [42], with the use of the tidyverse packages [43]. Before the analysis of the survey responses, we read all the free-text comments to ascertain that they do not contain personal information and they are in line with the respon- dent’s answers. We found that for 5 items the respondents’ comments contradicted their sur- vey choices (e.g., whether they have children), therefore, we excluded the responses of the corresponding items from further analyses (see S1 File). Following the preregistration, we only conducted descriptive statistics of the survey results.
+
+Results
+
+Background information
+
+The summary of the key demographic information of the 704 complete responses is presented in Table 2. A full summary of all the collected background information of the respondents are available in S1 File.
+
+Efficiency of research work
+
+The results showed that 94% (n = 662) of the surveyed researchers worked more from home during the COVID-19 lockdown compared to the time before. Of these researchers, 47%
+
+Table 2. Number and proportion of respondents in each demographic category.
+
+Background information question
+
+Gender
+
+Gender
+
+Gender
+
+Gender
+
+Academic position
+
+Academic position
+
+Academic position
+
+Academic position
+
+Academic position
+
+Academic position
+
+Academic position
+
+Academic position
+
+https://doi.org/10.1371/journal.pone.0249127.t002
+
+Subgroup
+
+Female
+
+Male
+
+Prefer not to say
+
+Other
+
+full professor
+
+associate professor
+
+assistant professor
+
+PhD student
+
+postdoc
+
+non
+
+-
+
+academic researcher
+
+research assistant
+
+not applicable
+
+Number of responses
+
+Proportion of the subgroup
+
+356
+
+338
+
+9
+
+1
+
+209
+
+172
+
+126
+
+72
+
+72
+
+38
+
+14
+
+1
+
+50.57
+
+48.01
+
+1.28
+
+0.14
+
+29.69
+
+24.43
+
+17.90
+
+10.23
+
+10.23
+
+5.40
+
+1.99
+
+0.14
+
+PLOS ONE | https://doi.org/10.1371/journal.pone.0249127 March 25, 2021
+
+5 / 13
+
+PLOS ONEResearchers working from home
+
+found that due to working more from home their research became, in general, less efficient, 23% found it more efficient, and 30% found no difference compared to working before the lockdown. Within this database, we also explored the effect of the lockdown on the efficiency of people living with children (n = 290). Here, we found that 58% of them experienced that due to working more from home their research became, in general, less efficient, 20% found it more efficient, and 22% found no difference compared to working before the lockdown. Of those researchers who live with children, we found that 71% of the 21 single parents and 57% of the 269 partnered parents found working less efficient when working from home compared to the time before the lockdown.
+
+When asking about how working more from home would affect the efficiency of their research after the lockdown, of those who have not already been working from home full time (n = 684), 29% assumed that it could make their research, in general, less efficient, 29% said that it would be more efficient, and 41% assumed no difference compared to the time before the lockdown (Fig 1).
+
+Focusing on the efficiency of the subgroup of people who live with children (n = 295), we found that for 32% their research work would be less efficient, for 30% it would be no different, and for 38% it would be more efficient to work from home after the lockdown, compared to the time before the lockdown.
+
+Comparing working from home to working in the office
+
+When comparing working from home to working in the office in general, people found that they can better achieve certain aspects of the research in one place than the other. They indi- cated that in the office they are better at sharing thoughts with colleagues, keeping in touch with their team, and collecting data, whereas at home they are better at working on their man- uscript, reading the literature, and analyzing their data (Fig 2).
+
+Fig 1. Percentages of the responses (N = 684) given to the three answer options when asked how working more from home would affect the efficiency of their research after the lockdown.
+
+https://doi.org/10.1371/journal.pone.0249127.g001
+
+PLOS ONE | https://doi.org/10.1371/journal.pone.0249127 March 25, 2021
+
+6 / 13
+
+PLOS ONEResearchers working from home
+
+Fig 2. The comparison (N = 703) of working at home and in the office concerning how the different aspects of research and work-life balance can be achieved. The bars represent response averages of the given aspects.
+
+https://doi.org/10.1371/journal.pone.0249127.g002
+
+Actual and ideal time spent working from home
+
+We also asked the researchers how much of their work time they spent working from home in the past, and how much it would be ideal for them to work from home in the future concern- ing both research efficiency and well-being. Fig 3 shows the distribution of percentages of time working from home in the past and in an ideal future. Comparing these values for each researcher, we found that 66% of them want to work more from home in the future than they did before the lockdown, whereas 16% of them want to work less from home, and 18% of them want to spend the same percentage of their work time at home in the future as before. (These latter calculations were not preregistered).
+
+Feasibility of working more from home
+
+Taken all their other duties (education, administration, etc.) and provided circumstances at home (infrastructure, level of disturbance), of researchers who would like to work more from home in the future (n = 461), 86% think that it would be possible to do so. Even among those who have teaching duties at work (n = 376), 84% think that more working from home would be ideal and possible.
+
+Discussion
+
+Researchers’ work and life have radically changed in recent times. The flexibility allowed by the mobilization of technology and the continuous access to the internet disintegrated the tra- ditional work-life boundary. Where, when, and how we work depends more and more on our own arrangements. The recent pandemic only highlighted an already existing task: researchers’
+
+PLOS ONE | https://doi.org/10.1371/journal.pone.0249127 March 25, 2021
+
+7 / 13
+
+PLOS ONEResearchers working from home
+
+Fig 3. The density distributions of the responses (N = 704) when asked how much of their worktime they worked from home before the pandemic lockdown and how much they would find ideal to work from home in the future.
+
+https://doi.org/10.1371/journal.pone.0249127.g003
+
+worklife has to be redefined. The key challenge in a new work-life model is to find strategies to balance the demands of work and personal life. As a first step, the present paper explored how working from home affects researchers’ efficiency and well-being.
+
+Our results showed that while the pandemic-related lockdown decreased the work effi- ciency for almost half of the researchers (47%), around a quarter (23%) of them experienced that they were more efficient during this time compared to the time before. Based on personal experience, 70% of the researchers think that after the lockdown they would be similarly (41%) or more efficient (29%) than before if they could spend more of their work-time at home. The remaining 30% thought that after the lockdown their work efficiency would decrease if they worked from home, which is noticeably lower than the 47% who claimed the same for the lockdown period. From these values we speculate that some of the obstacles of their work effi- ciency were specific to the pandemic lockdown. Such obstacles could have been the need to learn new methods to teach online [44] or the trouble adapting to the new lifestyle [45]. Fur- thermore, we found that working from the office and working from home support different aspects of research. Not surprisingly, activities that involve colleagues or team members are better bound to the office, but tasks that need focused attention, such as working on the manu- script or analyzing the data are better achieved from home.
+
+A central motivation of our study was to explore what proportion of their worktime researchers would find ideal to work from home, concerning both research efficiency and work-life balance. Two thirds of the researchers indicated that it would be better to work more from home in the future. It seemed that sharing work somewhat equally between the two
+
+PLOS ONE | https://doi.org/10.1371/journal.pone.0249127 March 25, 2021
+
+8 / 13
+
+PLOS ONEResearchers working from home
+
+venues is the most preferred arrangement. A great majority (86%) of those who would like to work more from home in the future, think that it would be possible to do so. As a conclusion, both the work and non-work life of researchers would take benefits should more WFH be allowed and neither workplace duties, nor their domestic circumstances are limits of such a change. That researchers have a preference to work more from home, might be due to the fact that they are more and more pressured by their work. Finishing manuscripts, and reading lit- erature is easier to find time for when working from home.
+
+A main message of the results of our present survey is that although almost half of the respondents reported reduced work efficiency during the lockdown, the majority of them would prefer the current remote work setting to some extent in the future. It is important to stress, however, that working from home is not equally advantageous for researchers. Several external and personal factors must play a role in researchers’ work efficiency and work-life bal- ance. In this analysis, we concentrated only on family status, but further dedicated studies will be required to gain a deeper understanding of the complex interaction of professional, institu- tional, personal, and domestic factors in this matter. While our study could only initiate the exploration of academics’ WFH benefits and challenges, we can already discuss a few relevant aspects regarding the work-life interface.
+
+Our data show that researchers who live with dependent children can exploit the advan- tages of working from home less than those who do not have childcare duties, irrespective of the pandemic lockdown. Looking after children is clearly a main source of people’s task over- load and, as a result, work-family conflict [46, 47]. As an implication, employers should pay special respect to employees’ childcare situations when defining work arrangements. It should be clear, however, that other caring responsibilities should also be respected such as looking after elderly or disabled relatives [48]. Furthermore, to avoid equating non-work life with fam- ily-life, a broader diversity of life circumstances, such as those who live alone, should be taken into consideration [49].
+
+It seems likely that after the pandemic significantly more work will be supplied from home [50]. The more of the researchers’ work will be done from home in the future, the greater the challenge will grow to integrate their work and non-work life. The extensive research on work- life conflict, should help us examine the issue and to develop coping strategies applicable for aca- demics’ life. The Boundary Theory [26, 51, 52] proved to be a useful framework to understand the work-home interface. According to this theory, individuals utilize different tactics to create and maintain an ideal level of work-home segmentation. These boundaries often serve as “men- tal fences” to simplify the environment into domains, such as work or home, to help us attend our roles, such as being an employee or a parent. These boundaries are more or less permeable, depending on how much the individual attending one role can be influenced by another role. Individuals differ in the degree to which they prefer and are able to segment their roles, but each boundary crossing requires a cognitive “leap” between these categories [53]. The source of con- flict is the demands of the different roles and responsibilities competing for one’s physical and mental resources. Working from home can easily blur the boundary between work and non- work domains. The conflict caused by the intrusion of the home world to one’s work time, just as well the intrusion of work tasks to one’s personal life are definite sources of weakened ability to concentrate on one’s tasks [54], exhaustion [55], and negative job satisfaction [56].
+
+What can researchers do to mitigate this challenge? Various tactics have been identified for controlling one’s borders between work and non-work. One can separate the two domains by temporal, physical, behavioral, and communicative segmentation [26]. Professionals often have preferences and self-developed tactics for boundary management. People who prefer tighter boundary management apply strong segmentation between work and home [57, 58]. For instance, they don’t do domestic tasks in worktime (temporal segmentation), close their
+
+PLOS ONE | https://doi.org/10.1371/journal.pone.0249127 March 25, 2021
+
+9 / 13
+
+PLOS ONEResearchers working from home
+
+door when working from home (physical segmentation), don’t read work emails at weekends (behavioral segmentation), or negotiate strict boundary rules with family members (communi- cative segmentation). People on the other on one side of the segmentation-integration contin- uum, might not mind, or cannot avoid, ad-hoc boundary-crossings and integrate the two domains by letting private space and time be mixed with their work.
+
+Researchers, just like other workers, need to develop new arrangements and skills to cope
+
+with the disintegration of the traditional work-life boundaries. To know how research and education institutes could best support this change would require a comprehensive exploration of the factors in researchers’ WFH life. There is probably no one-size-fits-all approach to pro- mote employees’ efficiency and well-being. Life circumstances often limit how much control people can have over their work-life boundaries when working from home [59]. Our results strongly indicate that some can boost work efficiency and wellbeing when working from home, others need external solutions, such as the office, to provide boundaries between their life domains. Until we gain comprehensive insight about the topic, individuals are probably the best judges of their own situation and of what arrangements may be beneficial for them in different times [60]. The more autonomy the employers provide to researchers in distributing their work between the office and home (while not lowering their expectations), the more they let them optimize this arrangement to their circumstances.
+
+Our study has several limitations: to investigate how factors such as research domain, seniority, or geographic location contribute to WFH efficiency and well-being would have needed a much greater sample. Moreover, the country of residence of the respondents was not collected in our survey and this factor could potentially alter the perception of WFH due to dif- fering social and infrastructural factors. Whereas the world-wide lockdown has provided a general experience to WFH to academics, the special circumstances just as well biased their judgment of the arrangement. With this exploratory research, we could only scratch the sur- face of the topic, the reader can probably generate a number of testable hypotheses that would be relevant to the topic but we could not analyze in this exploration.
+
+Newton working in lockdown became the idealized image of the home-working scientist. Unquestionably, he was a genius, but his success probably needed a fortunate work-life bound- ary. Should he had noisy neighbours, or taunting domestic duties, he might have achieved much less while working from home. With this paper, we aim to draw attention to how WFH is becoming a major element of researchers’ life and that we have to be prepared for this change. We hope that personal experience or the topic’s relevance to the future of science will invite researchers to continue this work.
+
+Supporting information
+
+S1 File.
+
+(DOCX)
+
+Acknowledgments
+
+We would like to thank Szonja Horvath, Matyas Sarudi, and Zsuzsa Szekely for their help with reviewing the free text responses.
+
+Author Contributions
+
+Conceptualization: Balazs Aczel, Tanja van der Lippe, Barnabas Szaszi.
+
+Data curation: Marton Kovacs.
+
+PLOS ONE | https://doi.org/10.1371/journal.pone.0249127 March 25, 2021
+
+10 / 13
+
+PLOS ONEResearchers working from home
+
+Formal analysis: Marton Kovacs.
+
+Investigation: Balazs Aczel, Marton Kovacs, Barnabas Szaszi.
+
+Methodology: Balazs Aczel, Marton Kovacs, Tanja van der Lippe, Barnabas Szaszi.
+
+Project administration: Balazs Aczel.
+
+Resources: Balazs Aczel, Marton Kovacs.
+
+Software: Balazs Aczel.
+
+Supervision: Tanja van der Lippe, Barnabas Szaszi.
+
+Validation: Balazs Aczel, Marton Kovacs, Barnabas Szaszi.
+
+Visualization: Marton Kovacs.
+
+Writing – original draft: Balazs Aczel, Marton Kovacs, Barnabas Szaszi.
+
+Writing – review & editing: Balazs Aczel, Marton Kovacs, Tanja van der Lippe, Barnabas
+
+Szaszi.
+
+References 1. Westfall RS. Newton’s Marvelous Years of Discovery and Their Aftermath: Myth versus Manuscript.
+
+Isis. 1980; 71(1):109–21.
+
+2. Charalampous M, Grant CA, Tramontano C, Michailidis E. Systematically reviewing remote e-workers’ well-being at work: a multidimensional approach. Eur J Work Organ Psychol. 2019; 28(1):51–73.
+
+3. Van der Lippe T, Lippe´ nyi Z. Beyond formal access: Organizational context, working from home, and
+
+work–family conflict of men and women in European workplaces. Soc Indic Res. 2018;1–20.
+
+4.
+
+Felstead A, Henseke G. Assessing the growth of remote working and its consequences for effort, well- being and work-life balance. New Technol Work Employ. 2017; 32(3):195–212.
+
+5. Parent-Thirion A, Biletta I, Cabrita J, Vargas O, Vermeylen G, Wilczynska A, et al. Sixth European work- ing conditions survey: Overview report. Eurofound (European Foundation for the Improvement of Living and Working . . .; 2016.
+
+6. US Department of Labor B of LS. American time use survey—2015 results. 2016;
+
+7. Deloitte. The Deloitte Global Millennial Survey 2020: Millennials and Gen Zs hold the key to creating a
+
+“better normal” [Internet]. Deloitte Touche Tohmatsu; 2020 [cited 2020 Jul 5]. https://www2.deloitte. com/global/en/pages/about-deloitte/articles/millennialsurvey.html
+
+8. Vilhelmson B, Thulin E. Who and where are the flexible workers? Exploring the current diffusion of tele-
+
+work in Sweden. New Technol Work Employ. 2016; 31(1):77–96.
+
+9.
+
+Tremblay D-G. Balancing work and family with telework? Organizational issues and challenges for women and managers. Women Manag Rev. 2002;
+
+10. Bloom N, Liang J, Roberts J, Ying ZJ. Does working from home work? Evidence from a Chinese experi-
+
+ment. Q J Econ. 2015; 130(1):165–218.
+
+11. Wheatley D. Employee satisfaction and use of flexible working arrangements: Work Employ Soc. 2017;
+
+31(4):567–85.
+
+12. Singley SG, Hynes K. Transitions to parenthood: Work-family policies, gender, and the couple context.
+
+Gend Soc. 2005; 19(3):376–97.
+
+13. Gajendran RS, Harrison DA. The good, the bad, and the unknown about telecommuting: meta-analysis of psychological mediators and individual consequences. J Appl Psychol. 2007; 92(6):1524–41. https:// doi.org/10.1037/0021-9010.92.6.1524 PMID: 18020794
+
+14. Kossek EE, Thompson RJ. Workplace flexibility: Integrating employer and employee perspectives to
+
+close the research–practice implementation gap. Oxf Handb Work Fam. 2016; 255.
+
+15. Kurland NB, Bailey DE. The advantages and challenges of working here, there, anywhere, and anytime.
+
+Organ Dyn. 1999; 28(2):53–68.
+
+16. Korbel JO, Stegle O. Effects of the COVID-19 pandemic on life scientists. Genome Biol. 2020; 21(113).
+
+https://doi.org/10.1186/s13059
+
+-
+
+020
+
+-
+
+02031
+
+-
+
+1 PMID: 32393316
+
+PLOS ONE | https://doi.org/10.1371/journal.pone.0249127 March 25, 2021
+
+11 / 13
+
+PLOS ONEResearchers working from home
+
+17. Gurstein P. Planning for telework and home-based employment: Reconsidering the home/work separa-
+
+tion. J Plan Educ Res. 1996; 15(3):212–24.
+
+18. Binder M, Coad A. How satisfied are the self-employed? A life domain view. J Happiness Stud. 2016;
+
+17(4):1409–33.
+
+19. Hill EJ, Ferris M, Ma¨ rtinson V. Does it matter where you work? A comparison of how three work venues
+
+(traditional office, virtual office, and home office) influence aspects of work and personal/family life. J Vocat Behav. 2003; 63(2):220–41.
+
+20. Baruch Y. The status of research on teleworking and an agenda for future research. Int J Manag Rev.
+
+2001; 3(2):113–29.
+
+21. Reuschke D. The subjective well-being of homeworkers across life domains. Environ Plan Econ Space.
+
+2019; 51(6):1326–49.
+
+22.
+
+Fonner KL, Roloff ME. Testing the Connectivity Paradox: Linking Teleworkers’ Communication Media Use to Social Presence, Stress from Interruptions, and Organizational Identification. Commun Monogr. 2012 Jun 1; 79(2):205–31.
+
+23. Pinsonneault A, Boisvert M. The impacts of telecommuting on organizations and individuals: A review of the literature. In: Telecommuting and virtual offices: Issues and opportunities. IGI Global; 2001. p. 163–85.
+
+24. McCloskey DW, Igbaria M. Does" out of sight" mean" out of mind"? An empirical investigation of the
+
+career advancement prospects of telecommuters. Inf Resour Manag J IRMJ. 2003; 16(2):19–34.
+
+25. Cooper CD, Kurland NB. Telecommuting, professional isolation, and employee development in public and private organizations. J Organ Behav Int J Ind Occup Organ Psychol Behav. 2002; 23(4):511–32.
+
+26. Kreiner GE, Hollensbe EC, Sheep ML. Balancing borders and bridges: Negotiating the work-home inter-
+
+face via boundary work tactics. Acad Manage J. 2009; 52(4):704–30.
+
+27. Richardson J, McKenna S. Reordering Spatial and Social Relations: A Case Study of Professional and
+
+Managerial Flexworkers. Br J Manag. 2014; 25(4):724–36.
+
+28. Glavin P, Schieman S. Work–Family Role Blurring and Work–Family Conflict: The Moderating Influence
+
+of Job Resources and Job Demands. Work Occup. 2012; 39(1):71–98.
+
+29. Snizek WE. Some Observations on the Effects of Microcomputers on the Productivity of University Sci-
+
+entists. Knowledge. 1987; 8(4):612–24.
+
+30. Kanuka H, Jugdev K, Heller R, West D. The rise of the teleworker: false promises and responsive solu-
+
+tions. High Educ. 2008; 56(2):149–65.
+
+31. Ng CF. Academics Telecommuting in Open and Distance Education Universities: Issues, challenges
+
+and opportunities. Int Rev Res Open Distrib Learn [Internet]. 2006 Sep 28 [cited 2020 Jul 15]; 7(2). Available from: http://www.irrodl.org/index.php/irrodl/article/view/300
+
+32. Schulte M. Distance Faculty Experiences: A Personal Perspective of Benefits and Detriments of Tele-
+
+commuting. J Contin High Educ. 2015; 63(1):63–6.
+
+33.
+
+Tustin DH. Telecommuting academics within an open distance education environment of South Africa: More content, productive, and healthy? Int Rev Res Open Distance Learn. 2014; 15(3):186–215.
+
+34. Dolan VLB. The isolation of online adjunct faculty and its impact on their performance. Int Rev Res
+
+Open Distrib Learn. 2011 Feb 28; 12(2):62–77.
+
+35.
+
+36.
+
+37.
+
+van der Lippe T. Dutch workers and time pressure: household and workplace characteristics. Work Employ Soc. 2007; 21(4):693–711.
+
+van der Horst M, van der Lippe T, Kluwer E. Aspirations and occupational achievements of Dutch fathers and mothers. Career Dev Int. 2014 Jan 1; 19(4):447–68.
+
+van der Lippe T, Jager A, Kops Y. Combination Pressure: The Paid Work: Family Balance of Men and Women in European Countries. Acta Sociol. 2006; 49(3):303–19.
+
+38. Sullivan C, Lewis S. Home-based telework, gender, and the synchronization of work and family: per-
+
+spectives of teleworkers and their co-residents. Gend Work Organ. 2001; 8(2):123–45.
+
+39. Hilbrecht M, Shaw SM, Johnson LC, Andrey J. ‘I’m home for the kids’: contradictory implications for
+
+work–life balance of teleworking mothers. Gend Work Organ. 2008; 15(5):454–76.
+
+40.
+
+Frederickson M. COVID-19’s gendered impact on academic productivity [Internet]. GitHub. 2020 [cited 2020 Jul 15]. https://github.com/drfreder/pandemic-pub-bias
+
+41. Myers KR, Tham WY, Yin Y, Cohodes N, Thursby JG, Thursby MC, et al. Unequal effects of the
+
+COVID-19 pandemic on scientists. Nat Hum Behav. 2020 Jul 15;1–4.
+
+42.
+
+Team RC. R: A Language and Environment for Statistical Computing. Dim Ca533. 2018; 1(1358):34.
+
+43. Wickham H, Averick M, Bryan J, Chang W, McGowan LD, Franc¸ois R, et al. Welcome to the Tidyverse.
+
+J Open Source Softw. 2019; 4(43):1686.
+
+PLOS ONE | https://doi.org/10.1371/journal.pone.0249127 March 25, 2021
+
+12 / 13
+
+PLOS ONEResearchers working from home
+
+44.
+
+Johnson N, Veletsianos G, Seaman J. US Faculty and Administrators’ Experiences and Approaches in the Early Weeks of the COVID-19 Pandemic. Online Learn. 2020; 24(2):6–21.
+
+45. Ghaffarizadeh SA, Ghaffarizadeh SA, Behbahani AH, Mehdizadeh M, Olechowski A. Life and work of
+
+researchers trapped in the COVID-19 pandemic vicious cycle. bioRxiv. 2021;
+
+46. Adkins CL, Premeaux SF. Spending time: The impact of hours worked on work–family conflict. J Vocat
+
+Behav. 2012; 80(2):380–9.
+
+47. Premeaux SF, Adkins CL, Mossholder KW. Balancing work and family: a field study of multi-dimen-
+
+sional, multi-role work-family conflict. J Organ Behav Int J Ind Occup Organ Psychol Behav. 2007; 28 (6):705–27.
+
+48. Eikhof DR, Warhurst C, Haunschild A. What work? What life? What balance? Critical reflections on the
+
+work-life balance debate. Empl Relat. 2007; 29(4):325–33.
+
+49. Valcour M. Work-based resources as moderators of the relationship between work hours and satisfac-
+
+tion with work-family balance. J Appl Psychol. 2007; 92(6):1512–23. https://doi.org/10.1037/0021-9010. 92.6.1512 PMID: 18020793
+
+50. Barrero JM, Bloom N, Davis SJ. Why Working From Home Will Stick. Univ Chic Becker Friedman Inst
+
+Econ Work Pap. 2020;(2020–174).
+
+51. Ashforth BE, Kreiner GE, Fugate M. All in a day’s work: Boundaries and micro role transitions. Acad
+
+Manage Rev. 2000; 25(3):472–91.
+
+52. Clark SC. Work/family border theory: A new theory of work/family balance. Hum Relat. 2000; 53
+
+(6):747–70.
+
+53.
+
+Zerubavel E. The fine line. University of Chicago Press; 1993.
+
+54. Kim S, Hollensbe E. Work interrupted: a closer look at work boundary permeability. Manag Res Rev.
+
+2017 Jan 1; 40(12):1280–97.
+
+55. Golden TD. Altering the effects of work and family conflict on exhaustion: Telework during traditional
+
+and nontraditional work hours. J Bus Psychol. 2012; 27(3):255–69.
+
+56. Carlson DS, Grzywacz JG, Kacmar KM. The relationship of schedule flexibility and outcomes via the
+
+work-family interface. J Manag Psychol. 2010; 25(4):330–55.
+
+57. Kossek EE, Noe RA, DeMarr BJ. Work-family role synthesis: Individual and organizational determi-
+
+nants. Int J Confl Manag. 1999; 10(2):102–29.
+
+58. Nippert-Eng C. Calendars and keys: The classification of “home” and “work”. In: Sociological Forum.
+
+Springer; 1996. p. 563–82.
+
+59. Kossek EE, Ruderman MN, Braddy PW, Hannum KM. Work–nonwork boundary management profiles:
+
+A person-centered approach. J Vocat Behav. 2012; 81(1):112–28.
+
+60.
+
+Troup C, Rose J. Working from home: Do formal or informal telework arrangements provide better work–family outcomes? Community Work Fam. 2012; 15(4):471–86.
+
+PLOS ONE | https://doi.org/10.1371/journal.pone.0249127 March 25, 2021
+
+13 / 13
+
+PLOS ONE
