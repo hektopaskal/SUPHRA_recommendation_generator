@@ -2,9 +2,9 @@ from litellm import completion
 from litellm.exceptions import APIError
 from pathlib import Path
 from dotenv import load_dotenv, dotenv_values
-
 import os
 import json
+import datetime
 
 load_dotenv()
 
@@ -67,7 +67,7 @@ tools = [
 ]
 
 
-def generate_recommendations(input_folder: Path, output_folder: Path, modelname: str, instruction_file: Path):
+def generate_recommendations_from_folder(input_folder: Path, output_folder: Path, modelname: str, instruction_file: Path):
     for folder in os.listdir(input_folder):
         # get input text (summary)
         summary_file_name = folder + ".txt"
@@ -118,7 +118,7 @@ def generate_recommendations(input_folder: Path, output_folder: Path, modelname:
 
         # extract completion and add to output-json as 'output'
         output = response.to_dict()
-        output["instruction"] = instruction_file # to keep track of used instruction file
+        output["instruction"] = instruction_file.stem # to keep track of used instruction file
         output["output"] = json.loads(
             response.choices[0].message.tool_calls[0].function.arguments)
 
@@ -131,9 +131,55 @@ def generate_recommendations(input_folder: Path, output_folder: Path, modelname:
 
         print(f'File saved at {output_path} as {output_file}\n')
 
-generate_recommendations(
-    input_folder="data/output/summaries",
-    output_folder="data/output/recommendations",
-    modelname="groq/llama-3.1-70b-versatile",
-    instruction_file="data/instructions/cgpt_instruction.txt"
-)
+
+def generate_recommendations_from_file(input_text: str, modelname: str, instruction_file: str):
+    try:
+        with Path(instruction_file).open(encoding='utf-8', errors='replace') as f:
+            instruction_text = f.read()
+    except FileNotFoundError:
+        print(f"Instruction file not found: {instruction_file}")
+        return None
+    except Exception as e:
+        print(f"An error occurred while trying to read the instruction file: {e}")
+        return None
+
+    # completion
+    try:
+        print("Processing input text")
+        response = completion(
+            model=modelname,
+            messages=[
+                {'role': 'system', 'content': instruction_text},
+                {'role': 'user', 'content': f'Create recommendations based on the information of this summary: {input_text}'}
+            ],
+            tools=tools
+        )
+    except KeyError as e:
+        print(f"Keyerror: {e}")
+        return None
+    except APIError as e:
+        print(f"API error: {e}")
+        return None
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        return None
+
+    # TODO: VALIDATION OF RECOMMENDATION!!!
+
+    # extract completion and create output dictionary
+    output = response.to_dict()
+    output["instruction"] = Path(instruction_file).stem # to keep track of used instruction file
+    output["output"] = json.loads(
+        response.choices[0].message.tool_calls[0].function.arguments)
+
+    print("Recommendation generated successfully")
+    return output
+
+# Example usage:
+# result = generate_recommendation(
+#     input_text="Your input text here",
+#     modelname="groq/llama-3.1-70b-versatile",
+#     instruction_file=Path("data/instructions/cgpt_instruction.txt")
+# )
+# if result:
+#     print(result)

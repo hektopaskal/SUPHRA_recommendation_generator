@@ -9,11 +9,42 @@ from typing import Optional, List
 from semanticscholar import SemanticScholar  # Add this import
 from dotenv import load_dotenv  # Add this import
 
+from litellm import completion
+
 # Load environment variables from .env file
 load_dotenv()
 
 app = typer.Typer()
-#pytesseract.pytesseract.tesseract_cmd="C:/Program Files/Tesseract-OCR/tesseract.exe"
+
+# extract DOI of a paper converted to txt file
+
+
+@app.command()
+def get_doi(file_path: str = typer.Argument(..., help="Path to the input file (format: .txt!)")) -> str:
+    """
+    Extract the DOI from a scientific paper.
+    """
+    try:
+        with open(Path(file_path), 'r', encoding='utf-8', errors='replace') as f:
+            input_text = f.read()
+        response = completion(
+            model="gpt-4o-mini",
+            messages=[
+                {'role': 'system',
+                 'content': "You are analyzing scientific papers. Read the text and extract the DOI of the paper. Your output should either be the DOI (e.g. 10.1000/182) and nothing else or 'DOI not found' if the DOI is not available in the text."},
+                {'role': 'user', 'content': f'Analyze the following text and find its DOI: {input_text}'}
+            ],
+            temperature=0.0
+        )
+        doi = response.choices[0].message.content
+        typer.echo(f"DOI: {doi}")
+        return doi
+    except FileNotFoundError:
+        typer.echo(f"Error: File not found - {file_path}", err=True)
+        return doi
+    except Exception as e:
+        typer.echo(f"Error: An unexpected error occurred - {str(e)}", err=True)
+        return doi
 
 # True, if .txt-file is empty.Empty text usually indicates image-based-PDF
 def is_empty(txt_file_path):
@@ -32,6 +63,7 @@ def is_empty(txt_file_path):
 
 # Function to extract text using tesseract OCR
 
+
 def ocr_fallback(pdf_file_path, txt_file_path):
     ocr_text = ""
     pages = convert_from_path(pdf_file_path)  # pdf2image
@@ -39,32 +71,41 @@ def ocr_fallback(pdf_file_path, txt_file_path):
         # Perform OCR on each page image
         ocr_text += pytesseract.image_to_string(page) + "\n"
     # Step 4: Save the extracted text to the output folder
-    with open(txt_file_path, 'w', encoding='utf-8') as output_file:                   #utf-16/32????
+    with open(txt_file_path, 'w', encoding='utf-8') as output_file:  # utf-16/32????
         output_file.write(ocr_text)
 
 # Takes a single PDF file and converts it into a txt file
-def convert_pdf(
-    input_file: str = typer.Argument(..., help="Path to the input PDF file"),
-    output_dir: str = typer.Argument(..., help="Output directory for processed file"),
-    num_pages: Optional[int] = typer.Option(None, "--num-pages", "-n", help="Number of pages to process (default: all)")
-):
+
+
+def convert_pdf(input_file: str, output_dir: str, num_pages: Optional[int] = None) -> str:
     """
     Process a single PDF file and save the result in the output directory.
+    Returns the path to the converted file.
     """
-    # Create the output folder if it doesn't exist
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    input_path = Path(input_file)
+    output_path = Path(output_dir)
 
-    file_name = os.path.basename(input_file)
-    output_txt_path = os.path.join(
-        output_dir, file_name.replace(".pdf", ""), file_name.replace(".pdf", ".txt"))
+    # Create the output folder if it doesn't exist
+    output_path.mkdir(parents=True, exist_ok=True)
+
+    file_name = input_path.name
+    file_stem = input_path.stem  # Get the filename without extension
+    
+    # Check if the output file already exists
+    output_txt_path = output_path / file_stem / f"{file_stem}.txt"
+    if output_txt_path.exists():
+        print(f"Skipping {file_name}: Output file already exists.")
+        return str(output_txt_path)
+
+    # Ensure the parent directory of the output file exists
+    output_txt_path.parent.mkdir(parents=True, exist_ok=True)
 
     print(f"Processing {input_file}...")
 
     # Step 1: Attempt to parse using the getpaper module
-    parse_try = try_parse_paper(
-        paper=Path(input_file),
-        folder=Path(output_dir),
+    try_parse_paper(
+        paper=input_file,
+        folder=output_dir,
         parser=PDFParser.pdf_miner,
         recreate_parent=False,
         cleaning=True,
@@ -82,18 +123,41 @@ def convert_pdf(
         ocr_fallback(input_file, output_txt_path)
 
     print(f"Finished processing {file_name}. Saved to {output_txt_path}.")
+    return str(output_txt_path)
+
+@app.command()
+def convert_pdf_command(
+    input_file: str = typer.Argument(..., help="Path to the input PDF file"),
+    output_dir: str = typer.Argument(..., help="Output directory for processed file"),
+    num_pages: Optional[int] = typer.Option(
+        None, "--num-pages", "-n", help="Number of pages to process (default: all)")
+) -> str:
+    """
+    CLI command to process a single PDF file and save the result in the output directory.
+    Returns the path to the converted file.
+    """
+    return convert_pdf(input_file, output_dir, num_pages)
 
 # Takes a folder containing PDF files and converts into txt files
+
+
 @app.command()
 def convert_pdfs(
-    input_dir: str = typer.Argument(..., help="Input directory containing PDF files"),
-    output_dir: str = typer.Argument(..., help="Output directory for processed files"),
-    num_pages: Optional[int] = typer.Option(None, "--num-pages", "-n", help="Number of pages to process (default: all)"),
-    files: Optional[List[str]] = typer.Option(None, "--files", "-f", help="Specific PDF files to process")
+    input_dir: str = typer.Argument(...,
+                                    help="Input directory containing PDF files"),
+    output_dir: str = typer.Argument(...,
+                                     help="Output directory for processed files"),
+    num_pages: Optional[int] = typer.Option(
+        None, "--num-pages", "-n", help="Number of pages to process (default: all)"),
+    files: Optional[List[str]] = typer.Option(
+        None, "--files", "-f", help="Specific PDF files to process")
 ):
     """
     Process PDF files from the input directory and save results in the output directory.
     """
+    input_dir = Path(input_dir)
+    output_dir = Path(output_dir)
+
     # Create the output folder if it doesn't exist
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -124,7 +188,8 @@ def convert_pdfs(
 
             # Step 2: Check if the parsed text is empty or garbled
             if is_empty(output_txt_path):
-                print(f"No text detacted in {file_name}, falling back to OCR...")
+                print(
+                    f"No text detacted in {file_name}, falling back to OCR...")
                 # Step 3: Use OCR as a fallback
                 ocr_fallback(pdf_file_path, output_txt_path)
 
@@ -132,20 +197,25 @@ def convert_pdfs(
                 f"Finished processing {file_name}. Saved to {output_txt_path}.\n")
 
 # New subcommand to search for papers using Semanticscholar
+
+
 @app.command()
-def search_papers(
+def search_papers_test(
     query: str = typer.Argument(..., help="Search query for papers"),
-    limit: int = typer.Option(10, "--limit", "-l", help="Number of results to return")
+    limit: int = typer.Option(
+        10, "--limit", "-l", help="Number of results to return")
 ):
     """
     Search for papers using Semanticscholar and display the results.
     """
     # Get the API key from environment variable
     api_key = os.getenv("SEMANTIC_SCHOLAR_API_KEY")
-    
+
     if not api_key:
-        typer.secho("Warning: SEMANTIC_SCHOLAR_API_KEY not found in environment variables or .env file.", fg=typer.colors.YELLOW)
-        typer.secho("Please set the SEMANTIC_SCHOLAR_API_KEY in your .env file or environment variables.", fg=typer.colors.YELLOW)
+        typer.secho(
+            "Warning: SEMANTIC_SCHOLAR_API_KEY not found in environment variables or .env file.", fg=typer.colors.YELLOW)
+        typer.secho(
+            "Please set the SEMANTIC_SCHOLAR_API_KEY in your .env file or environment variables.", fg=typer.colors.YELLOW)
         return
 
     # Initialize SemanticScholar with the API key
@@ -155,10 +225,13 @@ def search_papers(
     print(f"Search results for: '{query}'\n")
     for i, paper in enumerate(results, 1):
         print(f"{i}. Title: {paper.title}")
-        print(f"   Authors: {', '.join(author.name for author in paper.authors)}")
+        print(
+            f"   Authors: {', '.join(author.name for author in paper.authors)}")
         print(f"   Year: {paper.year}")
-        print(f"   Abstract: {paper.abstract[:200]}..." if paper.abstract else "   Abstract: N/A")
+        print(
+            f"   Abstract: {paper.abstract[:200]}..." if paper.abstract else "   Abstract: N/A")
         print(f"   URL: {paper.url}\n")
+
 
 if __name__ == "__main__":
     app()
