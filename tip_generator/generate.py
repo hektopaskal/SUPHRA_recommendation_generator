@@ -4,7 +4,7 @@ from pathlib import Path
 from dotenv import load_dotenv, dotenv_values
 import os
 import json
-import datetime
+import ast
 
 load_dotenv()
 
@@ -20,7 +20,7 @@ tools = [
                 "properties": {
                     "list_of_recommendation_sets": {
                         "type": "array",
-                        "description": "A list that contains each tip and its additional information. The list contains at least 5 tips",
+                        "description": "A list that contains each tip and its additional information. This list contains as many recommendations as you can create based only on the provided information.",
                         "items": {
                             "type": "object",
                             "properties": {
@@ -110,12 +110,6 @@ def generate_recommendations_from_folder(input_folder: Path, output_folder: Path
         except Exception as e:
             print(f"Unexpected error: {e}")
             return "An unexpected error occured."
-
-        # implement recommendation
-        
-        # TODO: VALIDATION OF RECOMMENDATION!!!
-
-
         # extract completion and add to output-json as 'output'
         output = response.to_dict()
         output["instruction"] = instruction_file.stem # to keep track of used instruction file
@@ -134,7 +128,7 @@ def generate_recommendations_from_folder(input_folder: Path, output_folder: Path
 
 def generate_recommendations_from_file(input_text: str, modelname: str, instruction_file: str):
     try:
-        with Path(instruction_file).open(encoding='utf-8', errors='replace') as f:
+        with Path(instruction_file).absolute().resolve().open(encoding='utf-8', errors='replace') as f:
             instruction_text = f.read()
     except FileNotFoundError:
         print(f"Instruction file not found: {instruction_file}")
@@ -172,14 +166,95 @@ def generate_recommendations_from_file(input_text: str, modelname: str, instruct
     output["output"] = json.loads(
         response.choices[0].message.tool_calls[0].function.arguments)
 
-    print("Recommendation generated successfully")
+    print("Recommendation generated successfully\n")
     return output
 
-# Example usage:
-# result = generate_recommendation(
-#     input_text="Your input text here",
-#     modelname="groq/llama-3.1-70b-versatile",
-#     instruction_file=Path("data/instructions/cgpt_instruction.txt")
-# )
-# if result:
-#     print(result)
+#!!! Instructions can still be None TODO
+def validate_recommendations(paper_path: str = None, paper_text: str = None, recommendations_path: str = None, recommendations_data: dict = None, modelname: str = None)->list[bool]:
+    # Read the source paper
+    if paper_path:
+        try:
+            with open(paper_path, 'r', encoding='utf-8', errors="replace") as f:
+                source_paper = f.read()
+        except FileNotFoundError:
+            print(f"Source paper file not found: {paper_path}")
+            return None
+        except Exception as e:
+            print(f"An error occurred while reading the source paper: {e}")
+            return None
+    elif paper_text:
+        source_paper = paper_text
+    else:
+        print("Invalid paper input. Must provide either a file path or the paper text.")
+        return None
+
+    # Read the recommendation data
+    if recommendations_path:
+        try:
+            with open(recommendations_path, 'r', encoding='utf-8') as f:
+                recommendations_data = json.load(f)
+        except FileNotFoundError:
+            print(f"Recommendations file not found: {recommendations_path}")
+            return None
+        except json.JSONDecodeError:
+            print(f"Invalid JSON in recommendations file: {recommendations_path}")
+            return None
+        except Exception as e:
+            print(f"An error occurred while reading the recommendations file: {e}")
+            return None
+    elif recommendations_data:
+        recommendations_data = recommendations_data
+    else:
+        print("Invalid recommendations input. Must provide either a file path or a dictionary.")
+        return None
+
+    recommendations_list = []
+    for rec in recommendations_data["output"]["list_of_recommendation_sets"]:
+        recommendations_list.append({"tip": rec["tip"], "information": rec["information"]})
+
+    try:
+        response = completion(
+            model=modelname,
+            messages=[
+                {'role': 'system', 'content': f"""
+                You will receive an informational scientific text that you have to analyze. 
+                Your task is to determine if the following recommendations are valid based on the information provided in the scientific paper.
+                These are the mentioned recommendations, each accompanied by a small explanation:
+                         {recommendations_list}
+                Decide whether the scientific paper justifies the claim of the recommendation or not.
+                For each recommendation - information -pair:
+
+                - Output "True" if the information sufficiently justifies the recommendation.
+                - Output "False" if the information does not sufficiently justify the recommendation.
+
+                Do not repeat the recommendation in your output.
+                The output should be a list of boolean values (True/False) in the same order as the input recommendations(example output: "[True, False]"). 
+                """},
+                {'role': 'user', 'content': f"Here is the scientific paper: {source_paper}"}
+            ],
+            temperature=0.0,
+            top_p=0.0
+        )
+        validation_result = [bool(value) for value in ast.literal_eval(response.choices[0].message.content)]
+
+        print("LLM Response:", validation_result)  # Print the LLM response
+    except APIError as api_error:
+        print(f"An API error occurred during validation: {api_error}")
+        print(f"Error details: {api_error.response.text if hasattr(api_error, 'response') else 'No additional details'}")
+        return None
+    except KeyError as key_error:
+        print(f"A key error occurred during validation: {key_error}")
+        print(f"This might be due to an unexpected response structure.")
+        return None
+    except Exception as e:
+        print(f"An unexpected error occurred during validation: {e}")
+        print(f"Error type: {type(e).__name__}")
+        return None
+
+    for rec in recommendations_data["output"]["list_of_recommendation_sets"]:
+        rec["validity_flag"] = validation_result[recommendations_data["output"]["list_of_recommendation_sets"].index(rec)]
+
+    return validation_result  # Return the validation result
+
+
+    

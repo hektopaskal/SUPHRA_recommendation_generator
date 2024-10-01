@@ -1,7 +1,7 @@
 from litellm import completion
 from litellm.exceptions import APIError
 from pathlib import Path
-from dotenv import load_dotenv, dotenv_values
+from dotenv import load_dotenv
 
 import typer
 from typing import Optional, List
@@ -10,13 +10,13 @@ from semanticscholar import SemanticScholar, Paper  # Add this import
 import os
 import json
 
-from generate import generate_recommendations_from_file
+from generate import generate_recommendations_from_file, validate_recommendations
 from pdf_to_txt import convert_pdf, get_doi
 
 
 load_dotenv()
 
-path_to_instruction_file = "py_tip_generator\data\instructions/paper_to_rec_inst.txt"
+path_to_instruction_file = "C:/Users/Nutzer/iCloudDrive/_Longevity/py_tip_generator/data/instructions/paper_to_rec_inst.txt"
 
 dois = []
 output_dir = Path("output")
@@ -39,7 +39,7 @@ SEMANTIC_SCHOLAR_FIELDS = [
     #'authors.url',
     'citationCount',
     #'citationStyles',
-    'citations',
+    #'citations',
     #'citations.abstract',
     #'citations.authors',
     #'citations.citationCount',
@@ -74,7 +74,7 @@ SEMANTIC_SCHOLAR_FIELDS = [
     'publicationTypes',
     'publicationVenue',
     'referenceCount',
-    'references',
+    #'references',
     #'references.abstract',
     #'references.authors',
     #'references.citationCount',
@@ -100,8 +100,8 @@ SEMANTIC_SCHOLAR_FIELDS = [
     'title',
     'tldr',
     'url',
-    'venue',
-    'year'
+    #'venue',
+    #'year'
 ]
 
 api_key = os.getenv('SEMANTIC_SCHOLAR_API_KEY')
@@ -148,18 +148,27 @@ def pdf_to_tips(
         for pdf in input_path.glob('*.pdf'):
             try:
                 # Convert PDF to text
-                converted_pdf_path = convert_pdf(str(pdf), str(output_path))
+                converted_pdf_path = convert_pdf(str(pdf), output_dir)
                 typer.echo(f"Converted PDF saved at {converted_pdf_path}")
                 
+                # Check if the converted file exists
+                if not Path(converted_pdf_path).exists():
+                    typer.echo(f"Error: Converted file not found at {converted_pdf_path}\n")
+                    continue
+
                 # Extract DOI
                 doi = get_doi(converted_pdf_path)
                 if not doi:
-                    typer.echo(f"Warning: Could not extract DOI from {pdf.name}. Skipping this file.")
+                    typer.echo(f"Warning: Could not extract DOI from {pdf.name}. Skipping this file.\n")
                     continue
 
                 # Fetch metadata from Semantic Scholar
                 sch = SemanticScholar(api_key=api_key)
-                meta_data = sch.get_paper(doi, fields=SEMANTIC_SCHOLAR_FIELDS)
+                try:
+                    meta_data = sch.get_paper(doi, fields=SEMANTIC_SCHOLAR_FIELDS)
+                except Exception as e:
+                    typer.echo(f"Error fetching metadata for DOI {doi}: {str(e)}")
+                    typer.echo(f"Continue without meta data!")
 
                 # Convert Paper object to dictionary
                 meta_data_dict = paper_to_dict(meta_data)
@@ -175,24 +184,37 @@ def pdf_to_tips(
                     instruction_file=generator_instructions
                 )
                 recommendations["meta_data"] = meta_data_dict
+                # Validate recommendations
+                validation_result = validate_recommendations(
+                    paper_path=converted_pdf_path,
+                    recommendations_data=recommendations,
+                    modelname=modelname
+                )
+                
+                if validation_result is not None:
+                    # Update recommendations with validation results
+                    for i, rec in enumerate(recommendations["output"]["list_of_recommendation_sets"]):
+                        rec["validity_flag"] = validation_result[i]
+                else:
+                    typer.echo(f"Warning: Validation failed for {pdf.name}. Proceeding without validation.")
 
                 # Save recommendations to JSON file
                 output_json_path = Path(converted_pdf_path).with_suffix(".json")
                 with output_json_path.open('w', encoding='utf-8') as json_file:
                     json.dump(recommendations, json_file, ensure_ascii=False, indent=4)
                 
-                typer.echo(f"Processed {pdf.name} successfully. Output saved to {output_json_path}")
+                typer.echo(f"Processed {pdf.name} successfully. Output saved to {output_json_path}\n")
 
             except Exception as e:
                 typer.echo(f"Error processing {pdf.name}: {str(e)}")
-                typer.echo(f"Error details: {type(e).__name__} at line {e.__traceback__.tb_lineno}")
+                typer.echo(f"Error details: {type(e).__name__} at line {e.__traceback__.tb_lineno}\n")
                 continue
 
-        typer.echo("All PDFs processed.")
+        typer.echo("All PDFs processed.\n")
 
     except Exception as e:
         typer.echo(f"An error occurred: {str(e)}")
-        typer.echo(f"Error details: {type(e).__name__} at line {e.__traceback__.tb_lineno}")
+        typer.echo(f"Error details: {type(e).__name__} at line {e.__traceback__.tb_lineno}\n")
         raise typer.Exit(code=1)
 
 @app.command()
@@ -217,7 +239,7 @@ def dois_to_tips(
 
         typer.echo(f"Processed DOI: {doi}")
 
-    typer.echo("All DOIs processed successfully!")
+    typer.echo("All DOIs processed successfully!\n")
 
 
 if __name__ == "__main__":

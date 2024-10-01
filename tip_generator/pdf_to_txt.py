@@ -31,10 +31,11 @@ def get_doi(file_path: str = typer.Argument(..., help="Path to the input file (f
             model="gpt-4o-mini",
             messages=[
                 {'role': 'system',
-                 'content': "You are analyzing scientific papers. Read the text and extract the DOI of the paper. Your output should either be the DOI (e.g. 10.1000/182) and nothing else or 'DOI not found' if the DOI is not available in the text."},
+                 'content': "You are analyzing scientific papers. Read the text and extract the DOI of the paper. Your output should either be the DOI (e.g. 10.1000/182) and nothing else or 'DOI_not_found' if the DOI is not available in the text."},
                 {'role': 'user', 'content': f'Analyze the following text and find its DOI: {input_text}'}
             ],
-            temperature=0.0
+            temperature=0.0,
+            top_p=0.0
         )
         doi = response.choices[0].message.content
         typer.echo(f"DOI: {doi}")
@@ -64,7 +65,7 @@ def is_empty(txt_file_path):
 # Function to extract text using tesseract OCR
 
 
-def ocr_fallback(pdf_file_path, txt_file_path):
+def ocr_fallback(pdf_file_path: Path, txt_file_path: Path):
     ocr_text = ""
     pages = convert_from_path(pdf_file_path)  # pdf2image
     for i, page in enumerate(pages):
@@ -104,8 +105,8 @@ def convert_pdf(input_file: str, output_dir: str, num_pages: Optional[int] = Non
 
     # Step 1: Attempt to parse using the getpaper module
     try_parse_paper(
-        paper=input_file,
-        folder=output_dir,
+        paper=input_path,
+        folder=output_path,
         parser=PDFParser.pdf_miner,
         recreate_parent=False,
         cleaning=True,
@@ -122,7 +123,7 @@ def convert_pdf(input_file: str, output_dir: str, num_pages: Optional[int] = Non
         # Step 3: Use OCR as a fallback
         ocr_fallback(input_file, output_txt_path)
 
-    print(f"Finished processing {file_name}. Saved to {output_txt_path}.")
+    print(f"Finished processing {file_name}.")
     return str(output_txt_path)
 
 @app.command()

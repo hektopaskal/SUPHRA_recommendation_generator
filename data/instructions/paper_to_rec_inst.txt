@@ -28,3 +28,4 @@ Use the 'format_output' tool to format your output correctly
    - If applicable, provide recommendations that can be tailored to different lifestyles or work environments (e.g., remote workers, office workers, students).
 
 Your goal is to provide users with actionable, evidence-based tips that they can apply to improve both their productivity and their overall well-being.
+Give as many recommendations as you can that are only based on the provided information!
