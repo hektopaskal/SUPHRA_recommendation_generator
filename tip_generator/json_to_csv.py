@@ -88,5 +88,5 @@ def command_append_json_to_csv(json_file: str, csv_file: str):
     append_json_to_csv(json_file, csv_file)
 
 if __name__ == "__main__":
-    typer.run(cli_append_json_to_csv)
+    typer.run(command_append_json_to_csv)
 merge_json_to_csv("C:/Users/Nutzer/Desktop/pdf_to_tip_output")
