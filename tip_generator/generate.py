@@ -139,7 +139,7 @@ def generate_recommendations_from_file(input_text: str, modelname: str, instruct
 
     # completion
     try:
-        print("Processing input text")
+        print("Processing input text...")
         response = completion(
             model=modelname,
             messages=[
@@ -166,7 +166,7 @@ def generate_recommendations_from_file(input_text: str, modelname: str, instruct
     output["output"] = json.loads(
         response.choices[0].message.tool_calls[0].function.arguments)
 
-    print("Recommendation generated successfully\n")
+    print("Recommendation generated successfully!")
     return output
 
 #!!! Instructions can still be None TODO
@@ -237,7 +237,7 @@ def validate_recommendations(paper_path: str = None, paper_text: str = None, rec
         )
         validation_result = [bool(value) for value in ast.literal_eval(response.choices[0].message.content)]
 
-        print("LLM Response:", validation_result)  # Print the LLM response
+        print("Validity note: ", validation_result)  # Print the LLM response
     except APIError as api_error:
         print(f"An API error occurred during validation: {api_error}")
         print(f"Error details: {api_error.response.text if hasattr(api_error, 'response') else 'No additional details'}")

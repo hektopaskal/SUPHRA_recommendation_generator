@@ -34,7 +34,7 @@ SEMANTIC_SCHOLAR_FIELDS = [
     #'authors.externalIds',
     #'authors.hIndex',
     #'authors.homepage',
-    'authors.name',
+    #'authors.name',
     'authors.paperCount',
     #'authors.url',
     'citationCount',
@@ -67,8 +67,8 @@ SEMANTIC_SCHOLAR_FIELDS = [
     'fieldsOfStudy',
     'influentialCitationCount',
     #'isOpenAccess',
-    'journal',
-    'openAccessPdf',
+    #'journal',
+    #'openAccessPdf',
     #'paperId',
     'publicationDate',
     'publicationTypes',
@@ -106,7 +106,7 @@ SEMANTIC_SCHOLAR_FIELDS = [
 
 api_key = os.getenv('SEMANTIC_SCHOLAR_API_KEY')
 
-def paper_to_dict(paper: Paper) -> dict:
+def scholar_paper_to_dict(paper: Paper) -> dict:
     """
     Convert a Semantic Scholar Paper object to a dictionary.
     """
@@ -134,7 +134,8 @@ def pdf_to_tips(
     generator_instructions: Optional[str] = typer.Option(
         path_to_instruction_file, help="Instructions for tip generating model (Path to txt file)"),
     sch_api_key: Optional[str] = typer.Option(
-        None, help="Semantic Scholar API key")
+        None, help="Semantic Scholar API key"),
+    create_csv: Optional[bool] = typer.Option(False, help="Create a csv file containing all recommendations")
 ):
     """
     Generates recommendations from given PDF files.
@@ -166,12 +167,11 @@ def pdf_to_tips(
                 sch = SemanticScholar(api_key=api_key)
                 try:
                     meta_data = sch.get_paper(doi, fields=SEMANTIC_SCHOLAR_FIELDS)
+                    # Convert semantic scholar object: Paper into meta_data dictionary
+                    meta_data_dict = scholar_paper_to_dict(meta_data)
                 except Exception as e:
-                    typer.echo(f"Error fetching metadata for DOI {doi}: {str(e)}")
+                    typer.echo(f"Error fetching metadata: {str(e)}")
                     typer.echo(f"Continue without meta data!")
-
-                # Convert Paper object to dictionary
-                meta_data_dict = paper_to_dict(meta_data)
 
                 # Read the converted text file
                 with Path(converted_pdf_path).open(encoding="utf-8", errors="replace") as f:
@@ -183,7 +183,9 @@ def pdf_to_tips(
                     modelname=modelname,
                     instruction_file=generator_instructions
                 )
+                # merge recommendations and meta data
                 recommendations["meta_data"] = meta_data_dict
+
                 # Validate recommendations
                 validation_result = validate_recommendations(
                     paper_path=converted_pdf_path,
