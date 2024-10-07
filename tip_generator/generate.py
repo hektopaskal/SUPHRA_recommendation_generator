@@ -157,16 +157,14 @@ def generate_recommendations_from_file(input_text: str, modelname: str, instruct
     except Exception as e:
         print(f"Unexpected error: {e}")
         return None
-
-    # TODO: VALIDATION OF RECOMMENDATION!!!
-
+    
     # extract completion and create output dictionary
     output = response.to_dict()
     output["instruction"] = Path(instruction_file).stem # to keep track of used instruction file
     output["output"] = json.loads(
         response.choices[0].message.tool_calls[0].function.arguments)
 
-    print("Recommendation generated successfully!")
+    print("Recommendation generated successfully.")
     return output
 
 #!!! Instructions can still be None TODO
