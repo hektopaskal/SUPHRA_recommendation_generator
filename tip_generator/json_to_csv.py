@@ -14,13 +14,20 @@ def flatten_meta_data(meta_data):
             for a in authors_dict:
                 meta_data_flat["Authors(PaperCount, CitationCount)"].append(
                     f"{authors_dict[authors_dict.index(a)]['name']}({authors_dict[authors_dict.index(a)]['paperCount']}, {authors_dict[authors_dict.index(a)]['citationCount']})")
+            meta_data_flat["Authors(PaperCount, CitationCount)"] = "; ".join(meta_data_flat['Authors(PaperCount, CitationCount)'])
         elif key == "authors.citationCount" or key  == "authors.name" or key == "authors.paperCount":
             pass
-        elif key == "publicationVenue" and not meta_data[key] == None:
-            # similar to authors...
+        # similar to authors...
+        elif key == "publicationVenue" and not value == None:
             meta_data_flat[key] = json.loads(str(meta_data[key].replace("'", '"')))['name']
+        elif key == "tldr" and not value == None:
+            meta_data_flat[key] = json.loads(str(meta_data[key].replace("'", '"')))['text']
+        # List to String
+        elif isinstance(value, list):
+            meta_data_flat[key] = ", ".join(value)
         else:
             meta_data_flat[key] = value
+        
     return meta_data_flat
 
 
