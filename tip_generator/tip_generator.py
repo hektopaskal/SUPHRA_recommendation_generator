@@ -177,7 +177,8 @@ def pdf_to_tips(
                     meta_data_dict = scholar_paper_to_dict(meta_data)
                 except Exception as e:
                     typer.echo(f"Error fetching metadata: {str(e)}")
-                    typer.echo(f"Continue without meta data!")
+                    typer.echo(f"Won't process this paper!")
+                    continue
 
                 # Read the converted text file
                 with Path(converted_pdf_path).open(encoding="utf-8", errors="replace") as f:
