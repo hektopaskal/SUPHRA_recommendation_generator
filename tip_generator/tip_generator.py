@@ -12,6 +12,7 @@ import json
 
 from generate import generate_recommendations_from_file, validate_recommendations
 from pdf_to_txt import convert_pdf, get_doi
+from json_to_csv import merge_json_to_csv
 
 
 load_dotenv()
@@ -19,92 +20,91 @@ load_dotenv()
 path_to_instruction_file = "C:/Users/Nutzer/iCloudDrive/_Longevity/py_tip_generator/data/instructions/paper_to_rec_inst.txt"
 
 dois = []
-output_dir = Path("output")
-input_dir = Path("input")
 
 app = typer.Typer()
 
 SEMANTIC_SCHOLAR_FIELDS = [
-    #'abstract',
+    # 'abstract',
     'authors',
-    #'authors.affiliations',
-    #'authors.aliases',
-    #'authors.authorId',
+    # 'authors.affiliations',
+    # 'authors.aliases',
+    # 'authors.authorId',
     'authors.citationCount',
-    #'authors.externalIds',
-    #'authors.hIndex',
-    #'authors.homepage',
-    #'authors.name',
+    # 'authors.externalIds',
+    # 'authors.hIndex',
+    # 'authors.homepage',
+    'authors.name',
     'authors.paperCount',
-    #'authors.url',
+    # 'authors.url',
     'citationCount',
-    #'citationStyles',
-    #'citations',
-    #'citations.abstract',
-    #'citations.authors',
-    #'citations.citationCount',
-    #'citations.citationStyles',
-    #'citations.corpusId',
-    #'citations.externalIds',
-    #'citations.fieldsOfStudy',
-    #'citations.influentialCitationCount',
-    #'citations.isOpenAccess',
-    #'citations.journal',
-    #'citations.openAccessPdf',
-    #'citations.paperId',
-    #'citations.publicationDate',
-    #'citations.publicationTypes',
-    #'citations.publicationVenue',
-    #'citations.referenceCount',
-    #'citations.s2FieldsOfStudy',
-    #'citations.title',
-    #'citations.url',
-    #'citations.venue',
-    #'citations.year',
-    #'corpusId',
-    #'embedding',
-    #'externalIds',
+    # 'citationStyles',
+    # 'citations',
+    # 'citations.abstract',
+    # 'citations.authors',
+    # 'citations.citationCount',
+    # 'citations.citationStyles',
+    # 'citations.corpusId',
+    # 'citations.externalIds',
+    # 'citations.fieldsOfStudy',
+    # 'citations.influentialCitationCount',
+    # 'citations.isOpenAccess',
+    # 'citations.journal',
+    # 'citations.openAccessPdf',
+    # 'citations.paperId',
+    # 'citations.publicationDate',
+    # 'citations.publicationTypes',
+    # 'citations.publicationVenue',
+    # 'citations.referenceCount',
+    # 'citations.s2FieldsOfStudy',
+    # 'citations.title',
+    # 'citations.url',
+    # 'citations.venue',
+    # 'citations.year',
+    # 'corpusId',
+    # 'embedding',
+    # 'externalIds',
     'fieldsOfStudy',
     'influentialCitationCount',
-    #'isOpenAccess',
-    #'journal',
-    #'openAccessPdf',
-    #'paperId',
+    # 'isOpenAccess',
+    # 'journal',
+    # 'openAccessPdf',
+    # 'paperId',
     'publicationDate',
     'publicationTypes',
     'publicationVenue',
     'referenceCount',
-    #'references',
-    #'references.abstract',
-    #'references.authors',
-    #'references.citationCount',
-    #'references.citationStyles',
-    #'references.corpusId',
-    #'references.externalIds',
-    #'references.fieldsOfStudy',
-    #'references.influentialCitationCount',
-    #'references.isOpenAccess',
-    #'references.journal',
-    #'references.openAccessPdf',
-    #'references.paperId',
-    #'references.publicationDate',
-    #'references.publicationTypes',
-    #'references.publicationVenue',
-    #'references.referenceCount',
-    #'references.s2FieldsOfStudy',
-    #'references.title',
-    #'references.url',
-    #'references.venue',
-    #'references.year',
-    #'s2FieldsOfStudy',
+    # 'references',
+    # 'references.abstract',
+    # 'references.authors',
+    # 'references.citationCount',
+    # 'references.citationStyles',
+    # 'references.corpusId',
+    # 'references.externalIds',
+    # 'references.fieldsOfStudy',
+    # 'references.influentialCitationCount',
+    # 'references.isOpenAccess',
+    # 'references.journal',
+    # 'references.openAccessPdf',
+    # 'references.paperId',
+    # 'references.publicationDate',
+    # 'references.publicationTypes',
+    # 'references.publicationVenue',
+    # 'references.referenceCount',
+    # 'references.s2FieldsOfStudy',
+    # 'references.title',
+    # 'references.url',
+    # 'references.venue',
+    # 'references.year',
+    # 's2FieldsOfStudy',
     'title',
     'tldr',
     'url',
-    #'venue',
-    #'year'
+    # 'venue',
+    # 'year'
 ]
 
 api_key = os.getenv('SEMANTIC_SCHOLAR_API_KEY')
+
 
 def scholar_paper_to_dict(paper: Paper) -> dict:
     """
@@ -116,12 +116,14 @@ def scholar_paper_to_dict(paper: Paper) -> dict:
         if isinstance(value, (str, int, float, bool, type(None))):
             paper_dict[field] = value
         elif isinstance(value, list):
-            paper_dict[field] = [item.to_dict() if hasattr(item, 'to_dict') else str(item) for item in value]
+            paper_dict[field] = [item.to_dict() if hasattr(
+                item, 'to_dict') else str(item) for item in value]
         elif hasattr(value, 'to_dict'):
             paper_dict[field] = value.to_dict()
         else:
             paper_dict[field] = str(value)
     return paper_dict
+
 
 @app.command()
 def pdf_to_tips(
@@ -135,7 +137,8 @@ def pdf_to_tips(
         path_to_instruction_file, help="Instructions for tip generating model (Path to txt file)"),
     sch_api_key: Optional[str] = typer.Option(
         None, help="Semantic Scholar API key"),
-    create_csv: Optional[bool] = typer.Option(False, help="Create a csv file containing all recommendations")
+    create_csv: Optional[bool] = typer.Option(
+        False, help="Create a csv file containing all recommendations")
 ):
     """
     Generates recommendations from given PDF files.
@@ -151,22 +154,25 @@ def pdf_to_tips(
                 # Convert PDF to text
                 converted_pdf_path = convert_pdf(str(pdf), output_dir)
                 typer.echo(f"Converted PDF saved at {converted_pdf_path}")
-                
+
                 # Check if the converted file exists
                 if not Path(converted_pdf_path).exists():
-                    typer.echo(f"Error: Converted file not found at {converted_pdf_path}\n")
+                    typer.echo(
+                        f"Error: Converted file not found at {converted_pdf_path}\n")
                     continue
 
                 # Extract DOI
                 doi = get_doi(converted_pdf_path)
                 if not doi:
-                    typer.echo(f"Warning: Could not extract DOI from {pdf.name}. Skipping this file.\n")
+                    typer.echo(
+                        f"Warning: Could not extract DOI from {pdf.name}. Skipping this file.\n")
                     continue
 
                 # Fetch metadata from Semantic Scholar
                 sch = SemanticScholar(api_key=api_key)
                 try:
-                    meta_data = sch.get_paper(doi, fields=SEMANTIC_SCHOLAR_FIELDS)
+                    meta_data = sch.get_paper(
+                        doi, fields=SEMANTIC_SCHOLAR_FIELDS)
                     # Convert semantic scholar object: Paper into meta_data dictionary
                     meta_data_dict = scholar_paper_to_dict(meta_data)
                 except Exception as e:
@@ -189,36 +195,48 @@ def pdf_to_tips(
                 # Validate recommendations
                 validation_result = validate_recommendations(
                     paper_path=converted_pdf_path,
-                    recommendations_data=recommendations,
+                    recommendations_text=recommendations,
                     modelname=modelname
                 )
-                
+
                 if validation_result is not None:
                     # Update recommendations with validation results
-                    for i, rec in enumerate(recommendations["output"]["list_of_recommendation_sets"]):
-                        rec["validity_flag"] = validation_result[i]
+                    for i, rec in enumerate(recommendations["output"]):
+                        rec['recommendation_set'][0]["validity_flag"] = validation_result[i]
                 else:
-                    typer.echo(f"Warning: Validation failed for {pdf.name}. Proceeding without validation.")
+                    typer.echo(
+                        f"Warning: Validation failed for {pdf.name}. Proceeding without validation.")
 
                 # Save recommendations to JSON file
-                output_json_path = Path(converted_pdf_path).with_suffix(".json")
+                output_json_path = Path(
+                    converted_pdf_path).with_suffix(".json")
                 with output_json_path.open('w', encoding='utf-8') as json_file:
-                    json.dump(recommendations, json_file, ensure_ascii=False, indent=4)
-                
-                typer.echo(f"Processed {pdf.name} successfully. Output saved to {output_json_path}\n")
+                    json.dump(recommendations, json_file,
+                              ensure_ascii=False, indent=4)
+
+                typer.echo(
+                    f"Processed {pdf.name} successfully. Output saved to {output_json_path}\n")
 
             except Exception as e:
                 typer.echo(f"Error processing {pdf.name}: {str(e)}")
-                typer.echo(f"Error details: {type(e).__name__} at line {e.__traceback__.tb_lineno}\n")
+                typer.echo(
+                    f"Error details: {type(e).__name__} at line {e.__traceback__.tb_lineno}\n")
                 continue
 
         typer.echo("All PDFs processed.\n")
 
     except Exception as e:
         typer.echo(f"An error occurred: {str(e)}")
-        typer.echo(f"Error details: {type(e).__name__} at line {e.__traceback__.tb_lineno}\n")
+        typer.echo(
+            f"Error details: {type(e).__name__} at line {e.__traceback__.tb_lineno}\n")
         raise typer.Exit(code=1)
+    
+    if create_csv:
+        merge_json_to_csv(output_dir)
+        typer.echo("Created csv file.")
 
+
+# does not work yet!!!
 @app.command()
 def dois_to_tips(
     dois: List[str] = typer.Argument(..., help="List of DOIs to process"),
@@ -235,7 +253,6 @@ def dois_to_tips(
 
     for doi in dois:
         paper_file_name = f"{doi.replace('/', '_')}.txt"
-        paper_file_path = input_dir / paper_file_name
 
         # ... existing code for processing each DOI ...
 

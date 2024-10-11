@@ -35,7 +35,7 @@ def append_json_to_csv(json_file, csv_file):
     with open(json_file, 'r', encoding='utf-8') as f:
         data = json.load(f)
 
-    recommendations = data['output']['list_of_recommendation_sets']
+    recommendations = [set['recommendation_set'][0] for set in data['output']]
     meta_data = data['meta_data']
 
     # Flatten meta_data for CSV columns
@@ -44,7 +44,7 @@ def append_json_to_csv(json_file, csv_file):
     # Prepare CSV columns
     columns = [
         'Tip', 'Information', 'Category', 'Goal', 'Focus', 'Activity_type',
-        'Daytime', 'Weekday', 'Validity_Flag'
+        'Daytime', 'Weekday', 'Validity_Flag', 'Weather', 'Concerns'
     ] + list(meta_data_flat.keys())
 
     with open(csv_file, 'a', newline='', encoding='utf-8') as csvfile:
@@ -66,6 +66,8 @@ def append_json_to_csv(json_file, csv_file):
                 'Daytime': rec.get('daytime'),
                 'Weekday': rec.get('weekday'),
                 'Validity_Flag': rec.get('validity_flag'),
+                'Weather': rec.get('weather'),
+                'Concerns': rec.get('concerns'),
                 **meta_data_flat
             }
             writer.writerow(row)

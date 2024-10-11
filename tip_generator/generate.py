@@ -14,13 +14,13 @@ tools = [
         "type": "function",
         "function": {
             "name": "format_output",
-            "description": "A function that takes in a list of arguments related to a productivity or health recommendations and format it right",
+            "description": "A function that formats a recommendation and their additional information properly",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "list_of_recommendation_sets": {
+                    "recommendation_set": {
                         "type": "array",
-                        "description": "A list that contains each tip and its additional information. This list contains as many recommendations as you can create based only on the provided information.",
+                        "description": "A set that contains a recommendation and all additional information.",
                         "items": {
                             "type": "object",
                             "properties": {
@@ -50,14 +50,22 @@ tools = [
                                 },
                                 "daytime": {
                                     "type": "string",
-                                    "description": "here you are supposed to assign a daytime to your recommendation. Decide when the advice should ideally be executed; the following times are possible: Morning(tips that may influence the day ahead. e.g. mindset, motivation), Noon(tips that are relevant for the second part of the day), Evening(tips that are relevant when the day's work is done), End of the day(tips that are relevant to finish the day, e.g. conclude about the day), Not relevant(tips for which the daytime does not seem to be relevant)"
+                                    "description": "here you are supposed to assign a daytime to your recommendation. Decide when the advice should ideally be executed. The following times are possible: Morning(tips that may influence the day ahead. e.g. mindset, motivation), Noon(tips that are relevant for the second part of the day), Evening(tips that are relevant when the day's work is done), End of the day(tips that are relevant to finish the day, e.g. conclude about the day), Not relevant(tips for which the daytime does not seem to be relevant)"
                                 },
                                 "weekday": {
                                     "type": "string",
                                     "description": "here you are supposed to decide for which type of days the recommendation is relevant; the following weekdays are possible: Workdays, Weekend, Public/Personal Holiday, Not relevant"
+                                },
+                                "weather": {
+                                    "type": "string",
+                                    "description": "here you are supposed to assign one or more weather situations that are ideal for execution of the tip. The following weather situations are possible: Sunny(ideal for outdoor activity), Overcast(suitable for less intense outdoor tasks or reflective activities), Rainy(best for indoor-focused tasks)"
+                                },
+                                "concerns": {
+                                    "type": "string",
+                                    "description": "here you are supposed to assign one or more concerns for which the tip could be helpful. The following concerns are possible: Time Management, Self-Discipline(staying focused and avoiding distractions), Procrastination, Goal-Setting(Defining Goals and tracking progress toward them), Work-Life Balance, Stress Management, Self-Motivation(finding internal motivation to work on tasks), Workspace Management(e.g. noise, lightning, comfort), Sleep Quality, Mindset"
                                 }
                             },
-                            "required": ["tip", "information", "category", "goal", "focus", "activity_type", "daytime", "weekday"]
+                            "required": ["tip", "information", "category", "goal", "focus", "activity_type", "daytime", "weekday", "weather", "concerns"]
                         }
                     }
                 }
@@ -71,7 +79,8 @@ def generate_recommendations_from_folder(input_folder: Path, output_folder: Path
     for folder in os.listdir(input_folder):
         # get input text (summary)
         summary_file_name = folder + ".txt"
-        summary_file_path = os.path.join(input_folder, folder, summary_file_name)
+        summary_file_path = os.path.join(
+            input_folder, folder, summary_file_name)
 
         try:
             with Path(summary_file_path).open(encoding='utf-8', errors='replace') as f:
@@ -112,9 +121,14 @@ def generate_recommendations_from_folder(input_folder: Path, output_folder: Path
             return "An unexpected error occured."
         # extract completion and add to output-json as 'output'
         output = response.to_dict()
-        output["instruction"] = instruction_file.stem # to keep track of used instruction file
+        # to keep track of used instruction file
+        output["instruction"] = instruction_file.stem
+        '''
         output["output"] = json.loads(
             response.choices[0].message.tool_calls[0].function.arguments)
+        '''
+        output["output"] = [json.loads(c.function.arguments)
+                            for c in response.choices[0].message.tool_calls]
 
         # create output file
         output_path = os.path.join(output_folder, folder.replace(".txt", ""))
@@ -134,7 +148,8 @@ def generate_recommendations_from_file(input_text: str, modelname: str, instruct
         print(f"Instruction file not found: {instruction_file}")
         return None
     except Exception as e:
-        print(f"An error occurred while trying to read the instruction file: {e}")
+        print(
+            f"An error occurred while trying to read the instruction file: {e}")
         return None
 
     # completion
@@ -157,19 +172,28 @@ def generate_recommendations_from_file(input_text: str, modelname: str, instruct
     except Exception as e:
         print(f"Unexpected error: {e}")
         return None
-    
+
     # extract completion and create output dictionary
     output = response.to_dict()
-    output["instruction"] = Path(instruction_file).stem # to keep track of used instruction file
-    output["output"] = json.loads(
-        response.choices[0].message.tool_calls[0].function.arguments)
+    # to keep track of used instruction file
+    output["instruction"] = Path(instruction_file).stem
+    output["output"] = [json.loads(c.function.arguments)
+                        for c in response.choices[0].message.tool_calls]
 
     print("Recommendation generated successfully.")
     return output
 
 #!!! Instructions can still be None TODO
-def validate_recommendations(paper_path: str = None, paper_text: str = None, recommendations_path: str = None, recommendations_data: dict = None, modelname: str = None)->list[bool]:
-    # Read the source paper
+
+
+def validate_recommendations(
+        # function can either take path to paper/recommendation or directly text as input
+        paper_path: str = None,
+        paper_text: str = None,
+        recommendations_path: str = None,
+        recommendations_text: dict = None,
+        modelname: str = None) -> list[bool]:
+    # Read the source paper or take text directly
     if paper_path:
         try:
             with open(paper_path, 'r', encoding='utf-8', errors="replace") as f:
@@ -186,7 +210,7 @@ def validate_recommendations(paper_path: str = None, paper_text: str = None, rec
         print("Invalid paper input. Must provide either a file path or the paper text.")
         return None
 
-    # Read the recommendation data
+    # Read the recommendation data or take data directly
     if recommendations_path:
         try:
             with open(recommendations_path, 'r', encoding='utf-8') as f:
@@ -195,20 +219,26 @@ def validate_recommendations(paper_path: str = None, paper_text: str = None, rec
             print(f"Recommendations file not found: {recommendations_path}")
             return None
         except json.JSONDecodeError:
-            print(f"Invalid JSON in recommendations file: {recommendations_path}")
+            print(
+                f"Invalid JSON in recommendations file: {recommendations_path}")
             return None
         except Exception as e:
-            print(f"An error occurred while reading the recommendations file: {e}")
+            print(
+                f"An error occurred while reading the recommendations file: {e}")
             return None
-    elif recommendations_data:
-        recommendations_data = recommendations_data
+    elif recommendations_text:
+        recommendations_data = recommendations_text
     else:
         print("Invalid recommendations input. Must provide either a file path or a dictionary.")
         return None
 
-    recommendations_list = []
-    for rec in recommendations_data["output"]["list_of_recommendation_sets"]:
-        recommendations_list.append({"tip": rec["tip"], "information": rec["information"]})
+    recommendations_list = [dict]
+    for rec in recommendations_data["output"]:
+        try:
+            recommendations_list.append(dict(
+                {"tip": rec['recommendation_set'][0]["tip"], "information": rec['recommendation_set'][0]["information"]}))
+        except Exception as e:
+            print(f"Exception occured: {e}")
 
     try:
         response = completion(
@@ -233,12 +263,13 @@ def validate_recommendations(paper_path: str = None, paper_text: str = None, rec
             temperature=0.0,
             top_p=0.0
         )
-        validation_result = [bool(value) for value in ast.literal_eval(response.choices[0].message.content)]
-
+        validation_result = [bool(value) for value in ast.literal_eval(
+            response.choices[0].message.content)]
         print("Validity note: ", validation_result)  # Print the LLM response
     except APIError as api_error:
         print(f"An API error occurred during validation: {api_error}")
-        print(f"Error details: {api_error.response.text if hasattr(api_error, 'response') else 'No additional details'}")
+        print(
+            f"Error details: {api_error.response.text if hasattr(api_error, 'response') else 'No additional details'}")
         return None
     except KeyError as key_error:
         print(f"A key error occurred during validation: {key_error}")
@@ -249,10 +280,4 @@ def validate_recommendations(paper_path: str = None, paper_text: str = None, rec
         print(f"Error type: {type(e).__name__}")
         return None
 
-    for rec in recommendations_data["output"]["list_of_recommendation_sets"]:
-        rec["validity_flag"] = validation_result[recommendations_data["output"]["list_of_recommendation_sets"].index(rec)]
-
     return validation_result  # Return the validation result
-
-
-    
