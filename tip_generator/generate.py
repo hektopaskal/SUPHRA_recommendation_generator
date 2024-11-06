@@ -42,7 +42,7 @@ tools = [
                                 },
                                 "focus": {
                                     "type": "string",
-                                    "description": "here you are supposed Ssto assign a subject to your recommendation; the following subjects are possible: Work(=daily professional activities), Non-Work(=non-professional activities), Physical(=means body, biological parameters), Mental(=emotion, thinking, orientations), Social(=inter-personal relations)"
+                                    "description": "here you are supposed to assign a subject to your recommendation; the following subjects are possible: Work(=daily professional activities), Non-Work(=non-professional activities), Physical(=means body, biological parameters), Mental(=emotion, thinking, orientations), Social(=inter-personal relations)"
                                 },
                                 "activity_type": {
                                     "type": "string",
@@ -161,7 +161,8 @@ def generate_recommendations_from_file(input_text: str, modelname: str, instruct
                 {'role': 'system', 'content': instruction_text},
                 {'role': 'user', 'content': f'Create recommendations based on the information of this summary: {input_text}'}
             ],
-            tools=tools
+            tools=tools,
+            temperature=0.5
         )
     except KeyError as e:
         print(f"Keyerror: {e}")
