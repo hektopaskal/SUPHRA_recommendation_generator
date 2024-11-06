@@ -8,6 +8,11 @@ dependencies:
   - pip
   - pdf2image
   - pytesseract
+  - matplotlib
+  - scikit-learn
+  - scipy
+  - mariadb
   - pip:
     - getpaper
     - just-agents
+    - sentence-transformers
