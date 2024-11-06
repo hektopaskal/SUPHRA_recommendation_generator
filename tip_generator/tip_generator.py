@@ -10,9 +10,9 @@ from semanticscholar import SemanticScholar, Paper  # Add this import
 import os
 import json
 
-from generate import generate_recommendations_from_file, validate_recommendations
-from pdf_to_txt import convert_pdf, get_doi
-from json_to_csv import merge_json_to_csv
+from tip_generator.generate import generate_recommendations_from_file, validate_recommendations
+from tip_generator.pdf_to_txt import convert_pdf, get_doi
+from tip_generator.json_to_csv import merge_json_to_csv
 
 
 load_dotenv()
@@ -136,9 +136,7 @@ def pdf_to_tips(
     generator_instructions: Optional[str] = typer.Option(
         path_to_instruction_file, help="Instructions for tip generating model (Path to txt file)"),
     sch_api_key: Optional[str] = typer.Option(
-        None, help="Semantic Scholar API key"),
-    create_csv: Optional[bool] = typer.Option(
-        False, help="Create a csv file containing all recommendations")
+        None, help="Semantic Scholar API key")
 ):
     """
     Generates recommendations from given PDF files.
@@ -232,9 +230,8 @@ def pdf_to_tips(
             f"Error details: {type(e).__name__} at line {e.__traceback__.tb_lineno}\n")
         raise typer.Exit(code=1)
     
-    if create_csv:
-        merge_json_to_csv(output_dir)
-        typer.echo("Created csv file.")
+    merge_json_to_csv(output_dir)
+    typer.echo("Created csv file.")
 
 
 # does not work yet!!!
