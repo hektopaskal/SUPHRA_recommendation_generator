@@ -16,3 +16,5 @@ dependencies:
     - getpaper
     - just-agents
     - sentence-transformers
+    - ttkbootstrap
+    - tkinterdnd2
