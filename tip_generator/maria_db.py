@@ -2,6 +2,8 @@ import mariadb
 import sys
 import pandas as pd
 from pathlib import Path
+import typer
+from typing import Optional
 
 # for similarity search with sentence embedding:
 from sentence_transformers import SentenceTransformer
@@ -11,9 +13,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 from collections import Counter
 
+# Create a Typer app
+app = typer.Typer()
+
 
 # insert a csv table into mariadb TODO: user, password, host, ... as parameter
-def insert_data_from_csv(csv_file_path: str):
+@app.command()
+def insert_data_from_csv_command(csv_file_path: str = typer.Argument(..., help="Path to csv file")):
+    """Give Path to csv_file and insert data from a CSV file into MariaDB."""
     csv_file_path = Path(csv_file_path)
 
     try:
@@ -45,14 +52,17 @@ def insert_data_from_csv(csv_file_path: str):
     print("Data inserted successfully!")
 
 # Find similar recommendations via sentence embeddings
-def find_similarities(
-    user: str,
-    password: str,
-    host: str,
-    port: int,
-    database: str,
-    treshold: float
+@app.command()
+def find_similarities_command(
+    user: str = typer.Argument(..., help="MariaDB username"),
+    password: str = typer.Argument(..., help="MariaDB password"),
+    host: str = typer.Argument(..., help="Database host"),
+    port: int = typer.Argument(..., help="Database port"),
+    database: str = typer.Argument(..., help="Database name"),
+    threshold: Optional[float] = typer.Option(4, help="Threshold for clustering. Set to 4, if not specified")
 ):
+    """Find tips that are semantically similar."""
+
     model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
     try:
         connection = mariadb.connect(
@@ -65,6 +75,7 @@ def find_similarities(
         print("Connection successful!")
     except mariadb.Error as e:
         print(f"Error connecting to MariaDB: {e}")
+        sys.exit(1)
 
     cursor = connection.cursor()
     cursor.execute("SELECT ID, Tip FROM pt_recommendations")
@@ -79,7 +90,7 @@ def find_similarities(
 
     # Perform Agglomerative Clustering
     agg_clustering = AgglomerativeClustering(
-        n_clusters=None, distance_threshold=treshold, linkage='ward')
+        n_clusters=None, distance_threshold=threshold, linkage='ward')
     labels = agg_clustering.fit_predict(embeddings)
 
     # Create a DataFrame to hold the cluster labels and their corresponding indices
@@ -124,14 +135,8 @@ def find_similarities(
     cursor.close()
     connection.close()
 
-    sys.exit(1)
+    sys.exit(0)
 
-insert_data_from_csv("C:/Users/Nutzer/Desktop/pdf_to_tip_output/merged_data.csv")
-find_similarities(
-    "root",
-    "rootpw",
-    "localhost",  # or 127.0.0.1
-    3306,  # default mariadb port
-    "pt_recommender_db",
-    5
-)
+
+if __name__ == "__main__":
+    app()
