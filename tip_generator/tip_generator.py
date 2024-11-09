@@ -10,9 +10,9 @@ from semanticscholar import SemanticScholar, Paper  # Add this import
 import os
 import json
 
-from tip_generator.generate import generate_recommendations_from_file, validate_recommendations
-from tip_generator.pdf_to_txt import convert_pdf, get_doi
-from tip_generator.json_to_csv import merge_json_to_csv
+from generate import generate_recommendations_from_file, validate_recommendations
+from pdf_to_txt import convert_pdf, get_doi
+from json_to_csv import merge_json_to_csv
 
 
 load_dotenv()
@@ -139,7 +139,8 @@ def pdf_to_tips(
         None, help="Semantic Scholar API key")
 ):
     """
-    Generates recommendations from given PDF files.
+    Generates recommendations from given PDF files and generates output dir with a folder for each paper containing .txt file with extracted text
+    and .json file with recommendations and meta data.
     """
     try:
         input_path = Path(input_dir).resolve().absolute()
