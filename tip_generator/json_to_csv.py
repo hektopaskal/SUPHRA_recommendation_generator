@@ -77,24 +77,24 @@ def merge_json_to_csv(folder_path: str):
     # Create the output CSV file path
     output_csv_path = Path(folder_path) / 'merged_data.csv'
 
-    # Initialize the CSV file with headers from the first JSON file
-    try:
-        first_json_file = next(Path(folder_path).rglob('*/**/*.json'))
-        append_json_to_csv(first_json_file, output_csv_path)
-    except StopIteration:
-        print("No JSON files found in the provided folder path.")
+    # Check for JSON files in the provided folder path
+    json_files = list(Path(folder_path).rglob('*/**/*.json'))
+    if not json_files:
+        raise FileNotFoundError("No JSON files found in the provided folder path.")
+    if output_csv_path.exists():
+        print("Will append to existing CSV...")
 
     # Iterate through each JSON file in the subfolders
-    for file_path in Path(folder_path).rglob('*/**/*.json'):
+    for file_path in json_files:
         append_json_to_csv(file_path, output_csv_path)
 
 
 app = typer.Typer()
 
-
 @app.command()
 def command_merge_json_to_csv(folder_path: str):
     merge_json_to_csv(folder_path)
+    typer.echo("Finished.")
 
 
 if __name__ == "__main__":
