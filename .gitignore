@@ -162,5 +162,7 @@ cython_debug/
 #.idea/
 
 
-testing/
-data/output
+.testing/
+data/output/
+data/papers_pdf/
+.vscode
