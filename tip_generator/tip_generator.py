@@ -10,9 +10,9 @@ from semanticscholar import SemanticScholar, Paper  # Add this import
 import os
 import json
 
-from generate import generate_recommendations_from_file, validate_recommendations
-from pdf_to_txt import convert_pdf, get_doi
-from json_to_csv import merge_json_to_csv
+from .generate import generate_recommendations_from_file, validate_recommendations
+from .pdf_to_txt import convert_pdf, get_doi
+from .json_to_csv import merge_json_to_csv
 
 
 load_dotenv()
@@ -127,7 +127,12 @@ def scholar_paper_to_dict(paper: Paper) -> dict:
 
 @app.command()
 def pdf_to_tips(
-    input_dir: str = typer.Argument(...,
+    input_dir : str,
+    output_dir : str,
+    generator_instructions : str,
+    modelname : str
+):
+    """input_dir: str = typer.Argument(...,
                                     help="Directory to read the PDFs from"),
     output_dir: str = typer.Argument(...,
                                      help="Directory to save the generated tips"),
@@ -135,9 +140,7 @@ def pdf_to_tips(
         "gpt-4o-mini", help="Model to use for tip generation"),
     generator_instructions: Optional[str] = typer.Option(
         path_to_instruction_file, help="Instructions for tip generating model (Path to txt file)"),
-    sch_api_key: Optional[str] = typer.Option(
-        None, help="Semantic Scholar API key")
-):
+):"""
     """
     Generates recommendations from given PDF files and generates output dir with a folder for each paper containing .txt file with extracted text
     and .json file with recommendations and meta data.
@@ -192,22 +195,22 @@ def pdf_to_tips(
                 # merge recommendations and meta data
                 recommendations["meta_data"] = meta_data_dict
 
-                # Validate recommendations
+                """# Validate recommendations
                 validation_result = validate_recommendations(
                     paper_path=converted_pdf_path,
                     recommendations_text=recommendations,
                     modelname=modelname
-                )
+                )"""
 
-                if validation_result is not None:
+                """if validation_result is not None:
                     # Update recommendations with validation results
                     for i, rec in enumerate(recommendations["output"]):
                         rec['recommendation_set'][0]["validity_flag"] = validation_result[i]
                 else:
                     typer.echo(
-                        f"Warning: Validation failed for {pdf.name}. Proceeding without validation.")
+                        f"Warning: Validation failed for {pdf.name}. Proceeding without validation.")"""
 
-                # Save recommendations to JSON file
+                # Save recommendations in JSON format
                 output_json_path = Path(
                     converted_pdf_path).with_suffix(".json")
                 with output_json_path.open('w', encoding='utf-8') as json_file:
