@@ -16,26 +16,93 @@ from collections import Counter
 # Create a Typer app
 app = typer.Typer()
 
+# Global variable to store login parameters for MariaDB
+login_params = {}
 
-# insert a csv table into mariadb TODO: user, password, host, ... as parameter
-@app.command()
-def insert_data_from_csv_command(csv_file_path: str = typer.Argument(..., help="Path to csv file")):
-    """Give Path to csv_file and insert data from a CSV file into MariaDB."""
-    csv_file_path = Path(csv_file_path)
+# Test connection to mariaDB
+def test_connection(
+    user : str,
+    password: str,
+    host: str,
+    port: int,
+    database: str,
+):
+    try:
+        mariadb.connect(
+            user=user,
+             password=password,
+            host=host,  # or 127.0.0.1
+            port=port,  # default mariadb port
+            database=database
+        )
+        return True
+    except mariadb.Error as e:
+        print(f"Error connecting to MariaDB: {e}")
+        return False
 
+# Set up connection to mariaDB; return connection
+def connect_to_maria(
+    user: str,
+    password: str,
+    host: str,
+    port: int,
+    database: str
+):
     try:
         connection = mariadb.connect(
-            user="root",
-            password="rootpw",
-            host="localhost",  # or 127.0.0.1
-            port=3306,  # default mariadb port
-            database="pt_recommender_db"
+            user=user,
+            password=password,
+            host=host,
+            port=port,
+            database=database
+        )
+        return connection
+    except mariadb.Error as e:
+        print(f"Error connecting to MariaDB: {e}")
+        return None
+    
+def insert_into_maria(
+        connection,
+        recommendations
+):
+    cursor = connection.cursor()
+
+
+    
+@app.command()
+def connect_to_maria_command(
+    user: str = typer.Argument(..., help="Username"),
+    password: str = typer.Argument(..., help="Password"),
+    host: str = typer.Argument(..., help="IP address of MariaDB"),
+    port: int = typer.Argument(..., help="Port"),
+    database: str = typer.Argument(..., help="Name of the DB")
+):
+    """Connect to MariaDB"""
+    try:
+        connection = mariadb.connect(
+            user=user,
+            password=password,
+            host=host,  # or 127.0.0.1
+            port=port,  # default mariadb port
+            database=database
         )
         print("Connection successful!")
+        global login_params
+        login_params["user"] = user
+        login_params["password"] = password
+        login_params["host"] = host
+        login_params["port"] = port
+        login_params["database"] = database
     except mariadb.Error as e:
         print(f"Error connecting to MariaDB: {e}")
         sys.exit(1)
 
+
+@app.command()
+def insert_data_from_csv(csv_file_path: str = typer.Argument(..., help="Path to csv file")):
+    """Give Path to csv_file and insert data from a CSV file into MariaDB."""
+    
+    connection = 0
     cursor = connection.cursor()
 
     df = pd.read_csv(csv_file_path)
@@ -51,7 +118,12 @@ def insert_data_from_csv_command(csv_file_path: str = typer.Argument(..., help="
 
     print("Data inserted successfully!")
 
+# Delete recommendations by their ID
+
+
 # Find similar recommendations via sentence embeddings
+
+
 @app.command()
 def find_similarities_command(
     user: str = typer.Argument(..., help="MariaDB username"),
@@ -59,7 +131,8 @@ def find_similarities_command(
     host: str = typer.Argument(..., help="Database host"),
     port: int = typer.Argument(..., help="Database port"),
     database: str = typer.Argument(..., help="Database name"),
-    threshold: Optional[float] = typer.Option(4, help="Threshold for clustering. Set to 4, if not specified")
+    threshold: Optional[float] = typer.Option(
+        4, help="Threshold for clustering. Set to 4, if not specified")
 ):
     """Find tips that are semantically similar."""
 
@@ -130,7 +203,8 @@ def find_similarities_command(
         print(f"\nCluster {i}:")
         for idx, label in enumerate(filtered_labels):
             if label == i:
-                print(f" - ID: {filtered_ids[idx]}, Tip: {recommendations[idx]}")
+                print(
+                    f" - ID: {filtered_ids[idx]}, Tip: {recommendations[idx]}")
 
     cursor.close()
     connection.close()
