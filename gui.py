@@ -201,7 +201,7 @@ class ExtractionFrame(customtkinter.CTkFrame):
         # recommendations = tip_generator.tip_generator.pdf_to_recs()
         if self.target_dir == None:
             raise ValueError("No directory selected.")
-        path_to_instruction_file = "C:/Users/Nutzer/iCloudDrive/_Longevity/py_tip_generator/data/instructions/paper_to_rec_inst.txt"
+        path_to_instruction_file = "data/instructions/paper_to_rec_inst.txt"
 
         pdf_to_tips(
             input_dir=self.target_dir,
