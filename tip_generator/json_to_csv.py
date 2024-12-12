@@ -95,7 +95,3 @@ app = typer.Typer()
 def command_merge_json_to_csv(folder_path: str):
     merge_json_to_csv(folder_path)
     typer.echo("Finished.")
-
-
-if __name__ == "__main__":
-    app()
