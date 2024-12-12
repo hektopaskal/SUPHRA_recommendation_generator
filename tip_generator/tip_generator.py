@@ -10,7 +10,7 @@ from semanticscholar import SemanticScholar, Paper  # Add this import
 import os
 import json
 
-from .generate import generate_recommendations_from_file, validate_recommendations
+from .generate import generate_recommendations_from_file
 from .pdf_to_txt import convert_pdf, get_doi
 from .json_to_csv import merge_json_to_csv
 
@@ -153,6 +153,7 @@ def pdf_to_tips(
 
         for pdf in input_path.glob('*.pdf'):
             try:
+                # TODO: check whether .txt already exists
                 # Convert PDF to text
                 converted_pdf_path = convert_pdf(str(pdf), output_dir)
                 typer.echo(f"Converted PDF saved at {converted_pdf_path}")
@@ -192,23 +193,10 @@ def pdf_to_tips(
                     modelname=modelname,
                     instruction_file=generator_instructions
                 )
+                # whenever generate_recommendations_from_file throws an error it returns None
+                if recommendations == None: continue
                 # merge recommendations and meta data
                 recommendations["meta_data"] = meta_data_dict
-
-                """# Validate recommendations
-                validation_result = validate_recommendations(
-                    paper_path=converted_pdf_path,
-                    recommendations_text=recommendations,
-                    modelname=modelname
-                )"""
-
-                """if validation_result is not None:
-                    # Update recommendations with validation results
-                    for i, rec in enumerate(recommendations["output"]):
-                        rec['recommendation_set'][0]["validity_flag"] = validation_result[i]
-                else:
-                    typer.echo(
-                        f"Warning: Validation failed for {pdf.name}. Proceeding without validation.")"""
 
                 # Save recommendations in JSON format
                 output_json_path = Path(
@@ -262,6 +250,3 @@ def dois_to_tips(
 
     typer.echo("All DOIs processed successfully!\n")
 
-
-if __name__ == "__main__":
-    app()

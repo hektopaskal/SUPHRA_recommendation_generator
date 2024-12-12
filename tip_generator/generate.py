@@ -2,7 +2,7 @@ from litellm import completion
 from litellm.exceptions import APIError
 from pathlib import Path
 from dotenv import load_dotenv, dotenv_values
-import os
+import sys
 import json
 import ast
 
@@ -277,106 +277,3 @@ def generate_recommendations_from_file(input_text: str, modelname: str, instruct
 
     print("Recommendation generated successfully.")
     return output
-
-#!!! Instructions can still be None TODO
-
-
-
-
-# APPROACH: Let a LLM validate wether a recommendation is justified by its source text or not
-
-def validate_recommendations(
-        # function can either take path to paper/recommendation or directly text as input
-        paper_path: str = None,
-        paper_text: str = None,
-        recommendations_path: str = None,
-        recommendations_text: dict = None,
-        modelname: str = None) -> list[bool]:
-    # Read the source paper or take text directly
-    if paper_path:
-        try:
-            with open(paper_path, 'r', encoding='utf-8', errors="replace") as f:
-                source_paper = f.read()
-        except FileNotFoundError:
-            print(f"Source paper file not found: {paper_path}")
-            return None
-        except Exception as e:
-            print(f"An error occurred while reading the source paper: {e}")
-            return None
-    elif paper_text:
-        source_paper = paper_text
-    else:
-        print("Invalid paper input. Must provide either a file path or the paper text.")
-        return None
-
-    # Read the recommendation data or take data directly
-    if recommendations_path:
-        try:
-            with open(recommendations_path, 'r', encoding='utf-8') as f:
-                recommendations_data = json.load(f)
-        except FileNotFoundError:
-            print(f"Recommendations file not found: {recommendations_path}")
-            return None
-        except json.JSONDecodeError:
-            print(
-                f"Invalid JSON in recommendations file: {recommendations_path}")
-            return None
-        except Exception as e:
-            print(
-                f"An error occurred while reading the recommendations file: {e}")
-            return None
-    elif recommendations_text:
-        recommendations_data = recommendations_text
-    else:
-        print("Invalid recommendations input. Must provide either a file path or a dictionary.")
-        return None
-
-    recommendations_list = [dict]
-    for rec in recommendations_data["output"]:
-        try:
-            recommendations_list.append(dict(
-                {"tip": rec['recommendation_set'][0]["tip"], "information": rec['recommendation_set'][0]["information"]}))
-        except Exception as e:
-            print(f"Exception occured: {e}")
-
-    try:
-        response = completion(
-            model=modelname,
-            messages=[
-                {'role': 'system', 'content': f"""
-                You will receive an informational scientific text that you have to analyze. 
-                Your task is to determine if the following recommendations are valid based on the information provided in the scientific paper.
-                These are the mentioned recommendations, each accompanied by a small explanation:
-                         {recommendations_list}
-                Decide whether the scientific paper justifies the claim of the recommendation or not.
-                For each recommendation - information -pair:
-
-                - Output "True" if the information sufficiently justifies the recommendation.
-                - Output "False" if the information does not sufficiently justify the recommendation.
-
-                Do not repeat the recommendation in your output.
-                The output should be a list of boolean values (True/False) in the same order as the input recommendations(example output: "[True, False]"). 
-                """},
-                {'role': 'user', 'content': f"Here is the scientific paper: {source_paper}"}
-            ],
-            temperature=0.0,
-            top_p=0.0
-        )
-        validation_result = [bool(value) for value in ast.literal_eval(
-            response.choices[0].message.content)]
-        print("Validity note: ", validation_result)  # Print the LLM response
-    except APIError as api_error:
-        print(f"An API error occurred during validation: {api_error}")
-        print(
-            f"Error details: {api_error.response.text if hasattr(api_error, 'response') else 'No additional details'}")
-        return None
-    except KeyError as key_error:
-        print(f"A key error occurred during validation: {key_error}")
-        print(f"This might be due to an unexpected response structure.")
-        return None
-    except Exception as e:
-        print(f"An unexpected error occurred during validation: {e}")
-        print(f"Error type: {type(e).__name__}")
-        return None
-
-    return validation_result  # Return the validation result
