@@ -16,9 +16,6 @@ from collections import Counter
 # Create a Typer app
 app = typer.Typer()
 
-# Global variable to store login parameters for MariaDB
-login_params = {}
-
 # Test connection to mariaDB
 def test_connection(
     user : str,
@@ -61,16 +58,20 @@ def connect_to_maria(
         print(f"Error connecting to MariaDB: {e}")
         return None
     
-def insert_into_maria(
+def insert_into_db(
         connection,
         recommendations
 ):
     cursor = connection.cursor()
-
-
-    
+    # build insertion statement
+    # get Database name
+    cursor.execute("SELECT DATABASE()")
+    db_name = cursor.fetchone()[0]
+    print(db_name)
+    print(recommendations)
+   
 @app.command()
-def connect_to_maria_command(
+def connect_to_db_command(
     user: str = typer.Argument(..., help="Username"),
     password: str = typer.Argument(..., help="Password"),
     host: str = typer.Argument(..., help="IP address of MariaDB"),
@@ -96,7 +97,6 @@ def connect_to_maria_command(
     except mariadb.Error as e:
         print(f"Error connecting to MariaDB: {e}")
         sys.exit(1)
-
 
 @app.command()
 def insert_data_from_csv(csv_file_path: str = typer.Argument(..., help="Path to csv file")):
@@ -209,8 +209,4 @@ def find_similarities_command(
     cursor.close()
     connection.close()
 
-    sys.exit(0)
-
-
-if __name__ == "__main__":
-    app()
+    return True

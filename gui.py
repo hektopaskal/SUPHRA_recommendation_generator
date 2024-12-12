@@ -6,7 +6,7 @@ import pandas as pd
 # intern functions
 from tip_generator.json_to_csv import flatten_meta_data
 from tip_generator.tip_generator import pdf_to_tips
-from tip_generator.db_operation import test_connection, connect_to_maria
+from tip_generator.db_operation import test_connection, connect_to_maria, insert_into_db
 
 # tkinter
 import tkinterdnd2 as tk2
@@ -91,6 +91,9 @@ class RecommendationsFrame(customtkinter.CTkFrame):
             n2a(len(headers)-1),
             values=["yes", "no", "maybe"],
         )
+
+
+
 
 # =================== Source Frame ====================
 
@@ -236,10 +239,25 @@ class ExtractionFrame(customtkinter.CTkFrame):
             self, text="Apply to Data Base", fg_color="steelblue4", command=self.apply_to_db)
         self.apply_to_db_button.grid(
             row=5, column=1, padx=5, pady=(0, 10), sticky="se")
+        return tips_df
+
+
+    def get_selected_recs(self):
+        selected_recs = pd.DataFrame(columns=self.recom_view.sheet.get_column_data()) # set column names
+
+        for row in range(len(self.recom_view.sheet.data)):
+            row_data = self.recom_view.sheet.get_row_data(row)
+            if row_data[-1] == "yes": # choose row if 'select' menu is set to yes
+                # convert List row_data to pd.Series and append to df; ignore_index to keep continous indexing inside df
+                selected_recs = selected_recs(pd.Series(row_data), ignore_index=True)
+        return selected_recs
+    
 
     # Apply selected recommendations to DB
     # get dropdown values: YES: apply to DB; NO: delete; TODO? MAYBE: save them for later
     def apply_to_db(self):
+        # get selected recommendations
+        recs = self.get_selected_recs()
         # read out login information and set up DB connection
         login = self.app.frames["DBConnect"].get_login()
         connection = connect_to_maria(
@@ -249,6 +267,8 @@ class ExtractionFrame(customtkinter.CTkFrame):
             port = login["port"],
             database = login["database"],
         )
+        # insert selected recs into db
+        insert_into_db(connection, recs)
 
 
     # DND field function
