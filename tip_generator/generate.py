@@ -100,10 +100,6 @@ new_tools = [
                                     "type": "string",
                                     "description": "introduce the user to the study briefly and assume that the user is not aware of the study. Therefore, use indefinite pronouns and say 'a study...' instead of 'the study...'; tell more about the study and how the scientists attained this findings; mention the scientists/authors of the input text and embed this information within a continuous text of a maximum of 50 words; embed names and annual figures in continuous text"
                                 },
-                                "category": {
-                                    "type": "string",
-                                    "description": "assign your advice to categories. the following categories are possible: work, success, productivity, performance, focus, time management, happiness, mental, active reflection, awareness, well-being, health, fitness, social"
-                                },
                                 "goal": {
                                     "type": "string",
                                     "description": "assign goals that should be achieved when the recommendation is executed. the following goals are possible: augment(should be mentioned when improving on something), prevent(should be mentioned when avoiding negative impact), recover(should be mentioned when restoring personal resources), maintain(Preserving current levels of performance, well-being, or resources to ensure stability and consistency)"
@@ -112,17 +108,9 @@ new_tools = [
                                     "type": "string",
                                     "description": "assign your advice to an activity type that describes the key characteristic of the activity to execute the tip. the following types are possible: Creative, Exercise, Cognitive, Relax, Social, Time Management"
                                 },
-                                "daytime": {
+                                "categories": {
                                     "type": "string",
-                                    "description": "assign a daytime that is ideal for the execution of the tip. The following times are possible: morning(tips that may influence the day ahead. e.g. mindset, motivation), noon(tips that are relevant for the second part of the day), evening(tips that are relevant when the day's work is done), end of day(tips that are relevant to finish the day, e.g. conclude about the day), any(if it doesnt matter)"
-                                },
-                                "weekday": {
-                                    "type": "string",
-                                    "description": "decide for which type of days the recommendation is relevant; the following weekdays are possible: workdays, weekend, week start, end of workweek, public holiday, , any(if it doesnt matter)"
-                                },
-                                "weather": {
-                                    "type": "string",
-                                    "description": "assign one or more weather situations that are ideal for execution of the tip. The following weather situations are possible: 'sunny' (if tip suggests outdoor activity), 'overcast' (suitable for less intense outdoor tasks or reflective activities), 'rainy' (if tip suggests indoor-focused tasks), 'any' (if it doesnt matter)"
+                                    "description": "assign your advice to categories. the following categories are possible: work, success, productivity, performance, focus, time management, happiness, mental, active reflection, awareness, well-being, health, fitness, social"
                                 },
                                 "concerns": {
                                     "type": "string",
@@ -138,6 +126,14 @@ new_tools = [
                                     mental-health(promoting emotional and psychological well-being to support overall performance)
                                     work-life balance(balancing professional and personal responsibilities for a fulfilling lifestyle),
                                     sleep quality(improving the quality and consistency of sleep to enhance energy and focus)"""
+                                },
+                                "daytime": {
+                                    "type": "string",
+                                    "description": "assign a daytime that is ideal for the execution of the tip. The following times are possible: morning(tips that may influence the day ahead. e.g. mindset, motivation), noon(tips that are relevant for the second part of the day), evening(tips that are relevant when the day's work is done), end of day(tips that are relevant to finish the day, e.g. conclude about the day), any(if it doesnt matter)"
+                                },
+                                "weekdays": {
+                                    "type": "string",
+                                    "description": "decide for which type of days the recommendation is relevant; the following weekdays are possible: workdays, weekend, week start, end of workweek, public holiday, , any(if it doesnt matter)"
                                 },
                                 "season": {
                                     "type": "string",
@@ -160,7 +156,7 @@ new_tools = [
                                     "description": "Assign the gender for which the tip is specifically relevant. Possible values: any, male, female(e.g. regarding menstrual cycle or menopause)"
                                 }
                             },
-                            "required": ["tip", "information", "category", "goal", "activity_type", "daytime", "weekday", "weather", "concerns", "season", "is_outdoor", "is_basic", "is_advanced", "gender"]
+                            "required": ["short_desc", "long_desc", "goal", "activity_type", "categories", "concerns", "daytime", "weekdays", "seasons", "is_outdoor", "is_basic", "is_advanced", "gender"]
                         }
                     }
                 }
