@@ -240,7 +240,8 @@ def generate_recommendations_from_file(input_text: str, modelname: str, instruct
             instruction_text = f.read()
     except FileNotFoundError:
         print(f"Instruction file not found: {instruction_file}")
-        return None
+    except PermissionError:
+        print(f"Permission for instructions file denied: {instruction_file}") 
     except Exception as e:
         print(
             f"An error occurred while trying to read the instruction file: {e}")

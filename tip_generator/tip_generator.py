@@ -17,7 +17,7 @@ from .json_to_csv import merge_json_to_csv
 
 load_dotenv()
 
-path_to_instruction_file = "C:/Users/Nutzer/iCloudDrive/_Longevity/py_tip_generator/data/instructions/paper_to_rec_inst.txt"
+path_to_instruction_file = "/data/instructions/paper_to_rec_inst.txt"
 
 dois = []
 
@@ -125,7 +125,7 @@ def scholar_paper_to_dict(paper: Paper) -> dict:
     return paper_dict
 
 
-@app.command()
+
 def pdf_to_tips(
     input_dir : str,
     output_dir : str,
@@ -188,11 +188,14 @@ def pdf_to_tips(
                     paper_text = f.read()
 
                 # Generate recommendations
-                recommendations = generate_recommendations_from_file(
-                    input_text=paper_text,
-                    modelname=modelname,
-                    instruction_file=generator_instructions
-                )
+                try:
+                    recommendations = generate_recommendations_from_file(
+                        input_text=paper_text,
+                        modelname=modelname,
+                        instruction_file=generator_instructions
+                    )
+                except Exception as e:
+                    print(f"Generate-Function: Recommendations: {e}")
                 # whenever generate_recommendations_from_file throws an error it returns None
                 if recommendations == None: continue
                 # merge recommendations and meta data
