@@ -92,11 +92,11 @@ new_tools = [
                         "items": {
                             "type": "object",
                             "properties": {
-                                "tip": {
+                                "short_desc": {
                                     "type": "string",
                                     "description": "generate the concise tip that is based on the information provided in the input text; whenever it is possible give precise time indications; ensure that the tip is concrete and easy to execute for everyone who wants to improve their own productivity and health state; Ensure that the recommendation is not to vague!"
                                 },
-                                "information": {
+                                "long_desc": {
                                     "type": "string",
                                     "description": "introduce the user to the study briefly and assume that the user is not aware of the study. Therefore, use indefinite pronouns and say 'a study...' instead of 'the study...'; tell more about the study and how the scientists attained this findings; mention the scientists/authors of the input text and embed this information within a continuous text of a maximum of 50 words; embed names and annual figures in continuous text"
                                 },
