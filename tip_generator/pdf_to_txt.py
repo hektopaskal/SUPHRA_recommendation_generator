@@ -233,6 +233,6 @@ def search_papers_test(
             f"   Abstract: {paper.abstract[:200]}..." if paper.abstract else "   Abstract: N/A")
         print(f"   URL: {paper.url}\n")
 
-
+# run typer app
 if __name__ == "__main__":
     app()
