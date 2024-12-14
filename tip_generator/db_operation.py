@@ -17,8 +17,10 @@ from collections import Counter
 app = typer.Typer()
 
 # Test connection to mariaDB
+
+
 def test_connection(
-    user : str,
+    user: str,
     password: str,
     host: str,
     port: int,
@@ -27,7 +29,7 @@ def test_connection(
     try:
         mariadb.connect(
             user=user,
-             password=password,
+            password=password,
             host=host,  # or 127.0.0.1
             port=port,  # default mariadb port
             database=database
@@ -38,6 +40,8 @@ def test_connection(
         return False
 
 # Set up connection to mariaDB; return connection
+
+
 def connect_to_maria(
     user: str,
     password: str,
@@ -57,19 +61,97 @@ def connect_to_maria(
     except mariadb.Error as e:
         print(f"Error connecting to MariaDB: {e}")
         return None
+
+
+@app.command()
+def db_testing():
+    recommendations = pd.DataFrame({"long_desc" : ["TESTETSTEST"]})
+    login = {
+            "user" : "root",
+            "password" : "rootpw",
+            "host" : "localhost",
+            "port" : 3306,
+            "database" : "copy_fellmann",
+            "table" : "recommendation"            
+        }
     
-def insert_into_db(
-        connection,
-        recommendations
-):
-    cursor = connection.cursor()
+    try:
+        conn = mariadb.connect(
+            user=login["user"],
+            password=login["password"],
+            host=login["host"],
+            port=login["port"],
+            database=login["database"],
+        )
+    except mariadb.Error as e:
+        print(f"MariaDB error: {e}")
+
+    cursor = conn.cursor()
+
     # build insertion statement
-    # get Database name
-    cursor.execute("SELECT DATABASE()")
-    db_name = cursor.fetchone()[0]
-    print(db_name)
+    table = login["table"]
+    columns_str = ", ".join(recommendations.columns)  # columns as Str
+    # value_subt = ["%s" for _ in range(len(recommendations.columns))] or :
+    # SQL placeholder for values in statement
+    value_subt = ", ".join(["%s"] * len(recommendations.columns))
+    stmt = f"INSERT INTO {table} ({columns_str}) VALUES ({value_subt})"
+    # insert recommendations row by row
+    recommendations.astype(str)
+    for _, row in recommendations.iterrows():  # _ is index
+        print(f"SQL-Statement: {stmt}")
+
+        cursor.execute(stmt, tuple(row))
+
+    print(table)
     print(recommendations)
-   
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    print("Data inserted successfully!")
+
+def insert_into_db(
+        login: dict,
+        recommendations: pd.DataFrame
+):
+    try:
+        conn = mariadb.connect(
+            user=login["user"],
+            password=login["password"],
+            host=login["host"],
+            port=login["port"],
+            database=login["database"],
+        )
+    except mariadb.Error as e:
+        print(f"MariaDB error: {e}")
+
+    cursor = conn.cursor()
+
+    # build insertion statement
+    table = login["table"]
+    columns_str = ", ".join(recommendations.columns)  # columns as Str
+    # value_subt = ["%s" for _ in range(len(recommendations.columns))] or :
+    # SQL placeholder for values in statement
+    value_subt = ", ".join(["%s"] * len(recommendations.columns))
+    stmt = f"INSERT INTO {table} ({columns_str}) VALUES ({value_subt})"
+    # insert recommendations row by row
+    recommendations.astype(str)
+    for _, row in recommendations.iterrows():  # _ is index
+        print(f"SQL-Statement: {stmt}")
+
+        cursor.execute(stmt, tuple(row))
+
+    print(table)
+    print(recommendations)
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    print("Data inserted successfully!")
+
+
 @app.command()
 def connect_to_db_command(
     user: str = typer.Argument(..., help="Username"),
@@ -98,10 +180,11 @@ def connect_to_db_command(
         print(f"Error connecting to MariaDB: {e}")
         sys.exit(1)
 
+
 @app.command()
 def insert_data_from_csv(csv_file_path: str = typer.Argument(..., help="Path to csv file")):
     """Give Path to csv_file and insert data from a CSV file into MariaDB."""
-    
+
     connection = 0
     cursor = connection.cursor()
 
@@ -210,3 +293,10 @@ def find_similarities_command(
     connection.close()
 
     return True
+
+
+
+
+# run typer app
+if __name__ == "__main__":
+    app()

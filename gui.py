@@ -66,7 +66,11 @@ class RecommendationsFrame(customtkinter.CTkFrame):
 
         # TODO dynamically split columns into recs and src
         headers : list = recs_df.columns.tolist() + ["select"]
-        data = recs_df.values.tolist()
+        data : list = recs_df.values.tolist()
+
+        del headers[0]
+        for row in data:
+            del row[0]
 
         """headers = [key for key in recommendations["output"]
                    [0]["recommendation_set"][0]] + ["select"]
@@ -90,6 +94,7 @@ class RecommendationsFrame(customtkinter.CTkFrame):
         self.sheet.dropdown(
             n2a(len(headers)-1),
             values=["yes", "no", "maybe"],
+            set_value="no"
         )
 
 
@@ -243,13 +248,14 @@ class ExtractionFrame(customtkinter.CTkFrame):
 
 
     def get_selected_recs(self):
-        selected_recs = pd.DataFrame(columns=self.recom_view.sheet.get_column_data()) # set column names
+        selected_recs = pd.DataFrame(columns=self.recom_view.sheet.headers()) # set column names
+        selected_recs = selected_recs.iloc[:, :-1] # delete 'select' column
 
         for row in range(len(self.recom_view.sheet.data)):
             row_data = self.recom_view.sheet.get_row_data(row)
             if row_data[-1] == "yes": # choose row if 'select' menu is set to yes
                 # convert List row_data to pd.Series and append to df; ignore_index to keep continous indexing inside df
-                selected_recs = selected_recs(pd.Series(row_data), ignore_index=True)
+                selected_recs.loc[len(selected_recs)] = row_data[:len(row_data)-1]
         return selected_recs
     
 
@@ -268,7 +274,7 @@ class ExtractionFrame(customtkinter.CTkFrame):
             database = login["database"],
         )
         # insert selected recs into db
-        insert_into_db(connection, recs)
+        insert_into_db(login, recs)
 
 
     # DND field function
@@ -297,6 +303,7 @@ class ExtractionFrame(customtkinter.CTkFrame):
                     text="No PDF file in directory!", fg_color="red")
 
 
+
 # =================== Comparison Frame ====================
 
 class ComparisonFrame(customtkinter.CTkFrame):
@@ -317,6 +324,7 @@ class ComparisonFrame(customtkinter.CTkFrame):
 
         button = customtkinter.CTkButton(self, text="Do something")
         button.grid(row=1, column=1, padx=10, pady=10)
+
 
 
 # =================== DB Connect Frame ====================
@@ -368,11 +376,16 @@ class DBConnectFrame(customtkinter.CTkFrame):
         self.database_entry = customtkinter.CTkEntry(self)
         self.database_entry.grid(row=6, column=2, pady=3, sticky="ew")
 
+        table_label = customtkinter.CTkLabel(self, text="Table: ")
+        table_label.grid(row=7, column=1, pady=3, sticky="ew")
+        self.table_entry = customtkinter.CTkEntry(self)
+        self.table_entry.grid(row=7, column=2, pady=(20,3), sticky="ew")
+
         test_db_connection_button = customtkinter.CTkButton(self, text="Test connection", command=self.test_connection)
-        test_db_connection_button.grid(row=7, column=1, columnspan=2, padx=10, pady=10)
+        test_db_connection_button.grid(row=8, column=1, columnspan=2, padx=10, pady=10)
 
         self.test_db_connection_label = customtkinter.CTkLabel(self, text="")
-        self.test_db_connection_label.grid(row=8, column=1, columnspan=2, padx=10, pady=10)
+        self.test_db_connection_label.grid(row=9, column=1, columnspan=2, padx=10, pady=10)
 
 
     def test_connection(self):    
@@ -393,9 +406,12 @@ class DBConnectFrame(customtkinter.CTkFrame):
             "password" : self.password_entry.get(),
             "host" : self.host_entry.get(),
             "port" : int(self.port_entry.get()) if not self.port_entry.get() == "" else 0,
-            "database" : self.database_entry.get()            
+            "database" : self.database_entry.get(),
+            "table" : self.table_entry.get()            
         }
         return login
+
+
 
 # =================== Key Frame ====================
 

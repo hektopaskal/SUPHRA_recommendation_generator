@@ -1,4 +1,3 @@
-import sys
 from gui import start_gui
 
 def main():
