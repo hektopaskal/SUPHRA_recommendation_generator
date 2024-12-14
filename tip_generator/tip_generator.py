@@ -1,40 +1,44 @@
-from litellm import completion
-from litellm.exceptions import APIError
+# python packages
+import os
+import json
 from pathlib import Path
 from dotenv import load_dotenv
 
+import pandas as pd
+# for CLI
 import typer
 from typing import Optional, List
-from semanticscholar import SemanticScholar, Paper  # Add this import
-
-import os
-import json
+# semanticscholar library (unofficial) TODO just use requests library?
+from semanticscholar import SemanticScholar, Paper, SemanticScholarException
 
 from .generate import generate_recommendations_from_file
 from .pdf_to_txt import convert_pdf, get_doi
-from .json_to_csv import merge_json_to_csv
+from .json_to_csv import merge_json_to_csv, dict_to_df
 
-
+# load environment variables
 load_dotenv()
+# Create a Typer app
+app = typer.Typer()
 
 path_to_instruction_file = "/data/instructions/paper_to_rec_inst.txt"
-
+api_key = os.getenv('SEMANTIC_SCHOLAR_API_KEY')
 dois = []
 
-app = typer.Typer()
+'''
+OUTDATED VERSION!
 
 SEMANTIC_SCHOLAR_FIELDS = [
     # 'abstract',
-    'authors',
+    # 'authors',
     # 'authors.affiliations',
     # 'authors.aliases',
     # 'authors.authorId',
-    'authors.citationCount',
+    # 'authors.citationCount',
     # 'authors.externalIds',
     # 'authors.hIndex',
     # 'authors.homepage',
-    'authors.name',
-    'authors.paperCount',
+    # 'authors.name',
+    # 'authors.paperCount',
     # 'authors.url',
     'citationCount',
     # 'citationStyles',
@@ -69,10 +73,10 @@ SEMANTIC_SCHOLAR_FIELDS = [
     # 'journal',
     # 'openAccessPdf',
     # 'paperId',
-    'publicationDate',
+    # 'publicationDate',
     'publicationTypes',
     'publicationVenue',
-    'referenceCount',
+    # 'referenceCount',
     # 'references',
     # 'references.abstract',
     # 'references.authors',
@@ -97,14 +101,11 @@ SEMANTIC_SCHOLAR_FIELDS = [
     # 'references.year',
     # 's2FieldsOfStudy',
     'title',
-    'tldr',
+    #'tldr',
     'url',
     # 'venue',
-    # 'year'
+    'year'
 ]
-
-api_key = os.getenv('SEMANTIC_SCHOLAR_API_KEY')
-
 
 def scholar_paper_to_dict(paper: Paper) -> dict:
     """
@@ -122,15 +123,127 @@ def scholar_paper_to_dict(paper: Paper) -> dict:
             paper_dict[field] = value.to_dict()
         else:
             paper_dict[field] = str(value)
+    return paper_dict'''
+
+
+SEMANTIC_SCHOLAR_FIELDS = [
+    # 'abstract',
+    # 'authors',
+    # 'authors.affiliations',
+    # 'authors.aliases',
+    # 'authors.authorId',
+    # 'authors.citationCount',
+    # 'authors.externalIds',
+    # 'authors.hIndex',
+    # 'authors.homepage',
+    # 'authors.name',
+    # 'authors.paperCount',
+    # 'authors.url',
+    'citationCount',
+    # 'citationStyles',
+    # 'citations',
+    # 'citations.abstract',
+    # 'citations.authors',
+    # 'citations.citationCount',
+    # 'citations.citationStyles',
+    # 'citations.corpusId',
+    # 'citations.externalIds',
+    # 'citations.fieldsOfStudy',
+    # 'citations.influentialCitationCount',
+    # 'citations.isOpenAccess',
+    # 'citations.journal',
+    # 'citations.openAccessPdf',
+    # 'citations.paperId',
+    # 'citations.publicationDate',
+    # 'citations.publicationTypes',
+    # 'citations.publicationVenue',
+    # 'citations.referenceCount',
+    # 'citations.s2FieldsOfStudy',
+    # 'citations.title',
+    # 'citations.url',
+    # 'citations.venue',
+    # 'citations.year',
+    # 'corpusId',
+    # 'embedding',
+    # 'externalIds',
+    'fieldsOfStudy',
+    'influentialCitationCount',
+    # 'isOpenAccess',
+    # 'journal',
+    # 'openAccessPdf',
+    # 'paperId',
+    # 'publicationDate',
+    'publicationTypes',
+    'publicationVenue',
+    # 'referenceCount',
+    # 'references',
+    # 'references.abstract',
+    # 'references.authors',
+    # 'references.citationCount',
+    # 'references.citationStyles',
+    # 'references.corpusId',
+    # 'references.externalIds',
+    # 'references.fieldsOfStudy',
+    # 'references.influentialCitationCount',
+    # 'references.isOpenAccess',
+    # 'references.journal',
+    # 'references.openAccessPdf',
+    # 'references.paperId',
+    # 'references.publicationDate',
+    # 'references.publicationTypes',
+    # 'references.publicationVenue',
+    # 'references.referenceCount',
+    # 'references.s2FieldsOfStudy',
+    # 'references.title',
+    # 'references.url',
+    # 'references.venue',
+    # 'references.year',
+    # 's2FieldsOfStudy',
+    'title',
+    # 'tldr',
+    'url',
+    # 'venue',
+    'year'
+]
+
+
+def scholar_paper_to_dict(paper: Paper) -> dict:
+    """
+    Convert a Semantic Scholar Paper object to a dictionary.
+    """
+    paper_dict = {
+        "src_title": getattr(paper, "title"),
+        #"src_reference"
+        "src_pub_year": getattr(paper, "year"),
+        #"src_is_journal"
+        "src_pub_type": ", ".join(getattr(paper, "publicationTypes")),
+        "src_field_of_study": ", ".join(getattr(paper, "fieldsOfStudy")),
+        #"src_doi"
+        "src_hyperlink": getattr(paper, "url"),
+        "src_pub_venue": json.loads(str(getattr(paper, "publicationVenue")).replace("'", '"'))["name"],
+        "src_citations": getattr(paper, "citationCount"),
+        "src_cit_influential": getattr(paper, "influentialCitationCount")
+    }
+    '''for field in SEMANTIC_SCHOLAR_FIELDS:
+        value = getattr(paper, field, None)
+        if isinstance(value, (str, int, float, bool, type(None))):
+            paper_dict[field] = value
+        elif isinstance(value, list):
+            paper_dict[field] = ", ".join(value) if all(
+                isinstance(item, str) for item in value) else value
+        elif field == "publicationVenue":
+            paper_dict[field] = json.loads(
+                str(value).replace("'", '"'))["name"]
+        else:
+            paper_dict[field] = str(value)'''
     return paper_dict
 
 
-
 def pdf_to_tips(
-    input_dir : str,
-    output_dir : str,
-    generator_instructions : str,
-    modelname : str
+    input_dir: str,
+    output_dir: str,
+    generator_instructions: str,
+    modelname: str
 ):
     """input_dir: str = typer.Argument(...,
                                     help="Directory to read the PDFs from"),
@@ -145,88 +258,79 @@ def pdf_to_tips(
     Generates recommendations from given PDF files and generates output dir with a folder for each paper containing .txt file with extracted text
     and .json file with recommendations and meta data.
     """
-    try:
-        input_path = Path(input_dir).resolve().absolute()
-        output_path = Path(output_dir).resolve().absolute()
+    recs_list = []
 
-        output_path.mkdir(parents=True, exist_ok=True)
+    input_path = Path(input_dir).resolve().absolute()
+    output_path = Path(output_dir).resolve().absolute()
 
-        for pdf in input_path.glob('*.pdf'):
-            try:
-                # TODO: check whether .txt already exists
-                # Convert PDF to text
-                converted_pdf_path = convert_pdf(str(pdf), output_dir)
-                typer.echo(f"Converted PDF saved at {converted_pdf_path}")
+    output_path.mkdir(parents=True, exist_ok=True)
 
-                # Check if the converted file exists
-                if not Path(converted_pdf_path).exists():
-                    typer.echo(
-                        f"Error: Converted file not found at {converted_pdf_path}\n")
-                    continue
+    for pdf in input_path.glob('*.pdf'):
+        # TODO: check whether .txt already exists
+        # Convert PDF to text
+        converted_pdf_path = convert_pdf(str(pdf), output_dir)
+        typer.echo(f"Converted PDF saved at {converted_pdf_path}")
 
-                # Extract DOI
-                doi = get_doi(converted_pdf_path)
-                if not doi:
-                    typer.echo(
-                        f"Warning: Could not extract DOI from {pdf.name}. Skipping this file.\n")
-                    continue
+        # Check if the converted file exists
+        if not Path(converted_pdf_path).exists():
+            print(f"Error: Converted file not found at {converted_pdf_path}\n")
+            continue
 
-                # Fetch metadata from Semantic Scholar
-                sch = SemanticScholar(api_key=api_key)
-                try:
-                    meta_data = sch.get_paper(
-                        doi, fields=SEMANTIC_SCHOLAR_FIELDS)
-                    # Convert semantic scholar object: Paper into meta_data dictionary
-                    meta_data_dict = scholar_paper_to_dict(meta_data)
-                except Exception as e:
-                    typer.echo(f"Error fetching metadata: {str(e)}")
-                    typer.echo(f"Won't process this paper!")
-                    continue
+        # Extract DOI
+        doi = get_doi(converted_pdf_path)
+        if not doi:
+            print(f"Warning: Not able to extract DOI from {pdf.name}. Skipping this file.\n")
+            continue
 
-                # Read the converted text file
-                with Path(converted_pdf_path).open(encoding="utf-8", errors="replace") as f:
-                    paper_text = f.read()
+        # Fetch metadata from Semantic Scholar
+        sch = SemanticScholar(api_key=api_key)
+        try:
+            meta_data = sch.get_paper(
+                doi, fields=SEMANTIC_SCHOLAR_FIELDS)
+            # Convert semantic scholar object: Paper into meta_data dictionary
+            meta_data_dict = scholar_paper_to_dict(meta_data)
+        except SemanticScholarException as e:
+            print(
+                f"Semantic-Scholar-API-Error occured: {e} - Skipping this file!\n")
+            continue
+        except Exception as e:
+            print(f"Unkown error occured: {e}")
 
-                # Generate recommendations
-                try:
-                    recommendations = generate_recommendations_from_file(
-                        input_text=paper_text,
-                        modelname=modelname,
-                        instruction_file=generator_instructions
-                    )
-                except Exception as e:
-                    print(f"Generate-Function: Recommendations: {e}")
-                # whenever generate_recommendations_from_file throws an error it returns None
-                if recommendations == None: continue
-                # merge recommendations and meta data
-                recommendations["meta_data"] = meta_data_dict
+        # Read the converted text file
+        with Path(converted_pdf_path).open(encoding="utf-8", errors="replace") as f:
+            paper_text = f.read()
 
-                # Save recommendations in JSON format
-                output_json_path = Path(
-                    converted_pdf_path).with_suffix(".json")
-                with output_json_path.open('w', encoding='utf-8') as json_file:
-                    json.dump(recommendations, json_file,
-                              ensure_ascii=False, indent=4)
+        # Generate recommendations
+        try:
+            recommendations = generate_recommendations_from_file(
+                input_text=paper_text,
+                modelname=modelname,
+                instruction_file=generator_instructions
+            )
+        except Exception as e:
+            print(f"Generate-Function: {e}")
+        # merge recommendations and meta data
+        recommendations["meta_data"] = meta_data_dict
+        # Save recommendations in JSON format
+        output_json_path = Path(
+            converted_pdf_path).with_suffix(".json")
+        with output_json_path.open('w', encoding='utf-8') as json_file:
+            json.dump(recommendations, json_file,
+                      ensure_ascii=False, indent=4)
 
-                typer.echo(
-                    f"Processed {pdf.name} successfully. Output saved to {output_json_path}\n")
+        # return recommendations as Pandas DataFrame
+        recs_df = dict_to_df(recommendations)
 
-            except Exception as e:
-                typer.echo(f"Error processing {pdf.name}: {str(e)}")
-                typer.echo(
-                    f"Error details: {type(e).__name__} at line {e.__traceback__.tb_lineno}\n")
-                continue
-
-        typer.echo("All PDFs processed.\n")
-
-    except Exception as e:
-        typer.echo(f"An error occurred: {str(e)}")
-        typer.echo(
-            f"Error details: {type(e).__name__} at line {e.__traceback__.tb_lineno}\n")
-        raise typer.Exit(code=1)
+        print(
+            f"Processed {pdf.name} successfully. Output saved to {output_json_path}\n")
     
-    merge_json_to_csv(output_dir)
-    typer.echo("Created csv file.")
+    print("All PDFs processed.")
+    # save recs_df as .csv file in output folder
+    recs_df.to_csv(Path(output_dir, "merged_data.csv"))
+    print("Created csv file.\n")
+
+    return recs_df
+
 
 
 # does not work yet!!!
@@ -253,3 +357,7 @@ def dois_to_tips(
 
     typer.echo("All DOIs processed successfully!\n")
 
+
+# run typer app
+if __name__ == "__main__":
+    app()

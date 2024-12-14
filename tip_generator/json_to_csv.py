@@ -2,7 +2,34 @@ import json
 import csv
 from pathlib import Path
 import typer
+import pandas as pd
 
+# Create a Typer app
+app = typer.Typer()
+
+@app.command()
+def dict_to_df(recs : dict) -> pd.DataFrame:
+    # read out the keys of the first recommendation set and and set them as headers
+    headers = [key for key in recs["output"][0]["recommendation_set"][0].keys()]
+    #rec_headers = ["short_desc", "long_desc", "goal", "activity_type", "categories", "concerns", "daytime", "weekdays", "season", "is_outdoor", "is_basic", "is_advanced", "gender"]
+    #src_headers = ["src_title", ]
+
+    # add headers of source data
+    headers = headers + [key for key in recs["meta_data"].keys()]
+    output_df = pd.DataFrame(columns=headers)
+
+    # add recommendations as body to DataFrame
+    for rec_set in recs["output"]:
+        rec = [rec_set["recommendation_set"][0][v] for v in rec_set["recommendation_set"][0]]
+        src = [recs["meta_data"][v] for v in recs["meta_data"]]
+
+        output_df.loc[len(output_df)] = rec + src 
+    print(f"dict_to_df: {output_df}")
+    return output_df
+
+# TODO hardcode the converter field by field so that it matches the data base fields
+
+    
 
 def flatten_meta_data(meta_data):
     meta_data_flat = {}
@@ -57,17 +84,17 @@ def append_json_to_csv(json_file, csv_file):
         for rec in recommendations:
             # Ensure keys match the fieldnames exactly
             row = {
-                'Tip': rec.get('tip'),
-                'Information': rec.get('information'),
-                'Category': rec.get('category'),
-                'Goal': rec.get('goal'),
-                'Focus': rec.get('focus'),
-                'Activity_type': rec.get('activity_type'),
-                'Daytime': rec.get('daytime'),
-                'Weekday': rec.get('weekday'),
-                'Validity_Flag': rec.get('validity_flag'),
-                'Weather': rec.get('weather'),
-                'Concerns': rec.get('concerns'),
+                'short_desc': rec.get('tip'),
+                'long_desc': rec.get('information'),
+                'goal': rec.get('category'),
+                'activity_type': rec.get('goal'),
+                'categories': rec.get('focus'),
+                'concerns': rec.get('activity_type'),
+                'daytime': rec.get('daytime'),
+                'weekdays': rec.get('weekday'),
+                'season': rec.get('validity_flag'),
+                'is_outdoor': rec.get('weather'),
+                'is_basic': rec.get('concerns'),
                 **meta_data_flat
             }
             writer.writerow(row)
@@ -89,9 +116,12 @@ def merge_json_to_csv(folder_path: str):
         append_json_to_csv(file_path, output_csv_path)
 
 
-app = typer.Typer()
-
 @app.command()
 def command_merge_json_to_csv(folder_path: str):
     merge_json_to_csv(folder_path)
     typer.echo("Finished.")
+
+
+# run typer app
+if __name__ == "__main__":
+    app()
