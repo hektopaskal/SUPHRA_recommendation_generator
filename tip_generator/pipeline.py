@@ -13,7 +13,7 @@ from semanticscholar import SemanticScholar, Paper, SemanticScholarException
 
 from .generate import generate_recommendations_from_file
 from .pdf_extraction import convert_pdf, get_doi
-from .dtypes_conversion import merge_json_to_csv, dict_to_df
+from .dtypes_conversion import dict_to_df
 
 # load environment variables
 load_dotenv()
@@ -141,6 +141,8 @@ def pdf_to_tips(
 
     output_path.mkdir(parents=True, exist_ok=True)
 
+    merged_dfs = pd.DataFrame
+
     for pdf in input_path.glob('*.pdf'):
         # TODO: check whether .txt already exists
         # Convert PDF to text
@@ -196,17 +198,17 @@ def pdf_to_tips(
                       ensure_ascii=False, indent=4)
 
         # return recommendations as Pandas DataFrame
-        recs_df = dict_to_df(recommendations)
+        merged_dfs =pd.concat([merged_dfs, dict_to_df(recommendations)])
 
         print(
             f"Processed {pdf.name} successfully. Output saved to {output_json_path}\n")
     
     print("All PDFs processed.")
     # save recs_df as .csv file in output folder
-    recs_df.to_csv(Path(output_dir, "merged_data.csv"))
+    merged_dfs.to_csv(Path(output_dir, "merged_data.csv"))
     print("Created csv file.\n")
 
-    return recs_df
+    return merged_dfs
 
 @app.command()
 def pdf_to_tips_command(
