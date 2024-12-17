@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from collections import Counter
 
+
 # Create a Typer app
 app = typer.Typer()
 
@@ -63,54 +64,6 @@ def connect_to_maria(
         return None
 
 
-@app.command()
-def db_testing():
-    recommendations = pd.DataFrame({"long_desc" : ["TESTETSTEST"]})
-    login = {
-            "user" : "root",
-            "password" : "rootpw",
-            "host" : "localhost",
-            "port" : 3306,
-            "database" : "copy_fellmann",
-            "table" : "recommendation"            
-        }
-    
-    try:
-        conn = mariadb.connect(
-            user=login["user"],
-            password=login["password"],
-            host=login["host"],
-            port=login["port"],
-            database=login["database"],
-        )
-    except mariadb.Error as e:
-        print(f"MariaDB error: {e}")
-
-    cursor = conn.cursor()
-
-    # build insertion statement
-    table = login["table"]
-    columns_str = ", ".join(recommendations.columns)  # columns as Str
-    # value_subt = ["%s" for _ in range(len(recommendations.columns))] or :
-    # SQL placeholder for values in statement
-    value_subt = ", ".join(["%s"] * len(recommendations.columns))
-    stmt = f"INSERT INTO {table} ({columns_str}) VALUES ({value_subt})"
-    # insert recommendations row by row
-    recommendations.astype(str)
-    for _, row in recommendations.iterrows():  # _ is index
-        print(f"SQL-Statement: {stmt}")
-
-        cursor.execute(stmt, tuple(row))
-
-    print(table)
-    print(recommendations)
-
-    conn.commit()
-    cursor.close()
-    conn.close()
-
-    print("Data inserted successfully!")
-
 def insert_into_db(
         login: dict,
         recommendations: pd.DataFrame
@@ -138,12 +91,10 @@ def insert_into_db(
     # insert recommendations row by row
     recommendations.astype(str)
     for _, row in recommendations.iterrows():  # _ is index
-        print(f"SQL-Statement: {stmt}")
-
         cursor.execute(stmt, tuple(row))
 
     print(table)
-    print(recommendations)
+    print(recommendations["categories"])
 
     conn.commit()
     cursor.close()

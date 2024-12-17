@@ -4,8 +4,7 @@ from pathlib import Path
 import pandas as pd
 
 # intern functions
-from tip_generator.json_to_csv import flatten_meta_data
-from tip_generator.tip_generator import pdf_to_tips
+from tip_generator.pipeline import pdf_to_tips
 from tip_generator.db_operation import test_connection, connect_to_maria, insert_into_db
 
 # tkinter
