@@ -92,7 +92,7 @@ class RecommendationsFrame(customtkinter.CTkFrame):
         # create dropdown boxes in the last column
         self.sheet.dropdown(
             n2a(len(headers)-1),
-            values=["yes", "no", "maybe"],
+            values=["yes", "no"],
             set_value="no"
         )
 
