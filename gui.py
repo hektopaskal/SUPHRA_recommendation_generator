@@ -443,7 +443,7 @@ class App:
 
     def __init__(self, root):
         self.root = root
-        self.root.title("Class-Based Frames Example")
+        self.root.title("SUPHRA Recommendation Generator")
         self.root.geometry("800x600")
 
         # Set appearance and theme
