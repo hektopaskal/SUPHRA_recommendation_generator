@@ -1,15 +1,20 @@
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+
 from getpaper.parse import try_parse_paper, PDFParser
 from langchain_community.document_loaders import PDFMinerLoader
+
 from pdf2image import convert_from_path
 import pytesseract
+
+from semanticscholar import SemanticScholar
+
 import typer
 from typing import Optional, List
-from semanticscholar import SemanticScholar  # Add this import
-from dotenv import load_dotenv  # Add this import
 
 from litellm import completion
+from litellm.exceptions import APIError
 
 # Load environment variables from .env file
 load_dotenv()
@@ -19,8 +24,8 @@ app = typer.Typer()
 # extract DOI of a paper converted to txt file
 
 
-@app.command()
-def get_doi(file_path: str = typer.Argument(..., help="Path to the input file (format: .txt!)")) -> str:
+
+def get_doi(file_path: str) -> str:
     """
     Extract the DOI from a scientific paper.
     """
@@ -38,14 +43,14 @@ def get_doi(file_path: str = typer.Argument(..., help="Path to the input file (f
             top_p=0.0
         )
         doi = response.choices[0].message.content
-        typer.echo(f"DOI: {doi}")
+        print(f"DOI: {doi}")
         return doi
-    except FileNotFoundError:
-        typer.echo(f"Error: File not found - {file_path}", err=True)
-        return doi
+    except FileNotFoundError as e:
+        raise e(f"File not found: {e}")
+    except APIError as e:
+        raise e(f"API error occured: {e}")
     except Exception as e:
-        typer.echo(f"Error: An unexpected error occurred - {str(e)}", err=True)
-        return doi
+        raise e(f"Unexpected error occured: {e}")
 
 # True, if .txt-file is empty.Empty text usually indicates image-based-PDF
 def is_empty(txt_file_path):
