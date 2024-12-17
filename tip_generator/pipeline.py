@@ -141,7 +141,7 @@ def pdf_to_tips(
 
     output_path.mkdir(parents=True, exist_ok=True)
 
-    merged_dfs = pd.DataFrame
+    merged_dfs = pd.DataFrame()
 
     for pdf in input_path.glob('*.pdf'):
         # TODO: check whether .txt already exists
@@ -155,24 +155,26 @@ def pdf_to_tips(
             continue
 
         # Extract DOI
-        doi = get_doi(converted_pdf_path)
-        if not doi:
-            print(f"Warning: Not able to extract DOI from {pdf.name}. Skipping this file.\n")
+        try:
+            doi = get_doi(converted_pdf_path)
+        except Exception as e:
+            print(f"DOI-Extraction: {e} - Skipping this file!\n")
             continue
 
         # Fetch metadata from Semantic Scholar
         sch = SemanticScholar(api_key=api_key)
         try:
-            meta_data = sch.get_paper(
-                doi, fields=SEMANTIC_SCHOLAR_FIELDS)
-            # Convert semantic scholar object: Paper into meta_data dictionary
-            meta_data_dict = scholar_paper_to_dict(meta_data)
+            meta_data = sch.get_paper(doi, fields=SEMANTIC_SCHOLAR_FIELDS)
         except SemanticScholarException as e:
             print(
                 f"Semantic-Scholar-API-Error occured: {e} - Skipping this file!\n")
             continue
         except Exception as e:
             print(f"Unkown error occured: {e}")
+        # Convert semantic scholar object: Paper into meta_data dictionary
+        meta_data_dict = scholar_paper_to_dict(meta_data)
+        # add DOI to meta data dict
+        meta_data_dict["src_doi"] = doi
 
         # Read the converted text file
         with Path(converted_pdf_path).open(encoding="utf-8", errors="replace") as f:
@@ -186,8 +188,8 @@ def pdf_to_tips(
                 instruction_file=generator_instructions
             )
         except Exception as e:
-            print(f"Generate-Function: {e}")
-            break
+            print(f"Generate-Function: {e} - Skipping this file!\n")
+            continue
         # merge recommendations and meta data
         recommendations["meta_data"] = meta_data_dict
         # Save recommendations in JSON format
