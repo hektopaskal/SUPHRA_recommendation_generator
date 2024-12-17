@@ -1,82 +1,12 @@
 from litellm import completion
 from litellm.exceptions import APIError
 from pathlib import Path
-from dotenv import load_dotenv, dotenv_values
-import sys
+from dotenv import load_dotenv
 import json
-import ast
 
 load_dotenv()
 
 # format output by calling function
-tools = [
-    {
-        "type": "function",
-        "function": {
-            "name": "format_output",
-            "description": "A function that formats a recommendation and their additional information properly",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "recommendation_set": {
-                        "type": "array",
-                        "description": "A set that contains a recommendation and all additional information.",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "tip": {
-                                    "type": "string",
-                                    "description": "here you are supposed to generate the concise tip that is based on the information provided in the input text; whenever it is possible give precise time indications; ensure that the tip is concrete and easy to execute for everyone who wants to improve their own productivity and health state; Ensure that the recommendation is not to vague!"
-                                },
-                                "information": {
-                                    "type": "string",
-                                    "description": "here you are supposed to introduce the user to the study briefly; tell more about the study and how the scientists attained this findings; mention the scientists/authors of the input text and embed this information within a continuous text of a maximum of 50 words; assume that the reader had never heard of the study you are talking about; embed names and annual figures in continuous text"
-                                },
-                                "category": {
-                                    "type": "string",
-                                    "description": "here you are supposed to assign your advice to categories; the following categories are possible: Health, Well-being, active reflection, work, success, happiness, focus, time, performance, fitness, and motivation"
-                                },
-                                "goal": {
-                                    "type": "string",
-                                    "description": "here you are supposed to assign goals that should be achieved when the recommendation is executed; the following goals are possible: Awareness(should be mentioned when reflecting on something), Augment(should be mentioned when improving on something), Prevent(should be mentioned when avoiding negative impact), Recover(should be mentioned when restoring personal resources)"
-                                },
-                                "focus": {
-                                    "type": "string",
-                                    "description": "here you are supposed to assign a subject to your recommendation; the following subjects are possible: Work(=daily professional activities), Non-Work(=non-professional activities), Physical(=means body, biological parameters), Mental(=emotion, thinking, orientations), Social(=inter-personal relations)"
-                                },
-                                "activity_type": {
-                                    "type": "string",
-                                    "description": "here you are supposed to assign your advice to an activity type that describes the key characteristic of the activity to execute the tip; the following types are possible: Creative, Exercise, Cognitive, Relax, Social, Time Management"
-                                },
-                                "daytime": {
-                                    "type": "string",
-                                    "description": "here you are supposed to assign a daytime to your recommendation. Decide when the advice should ideally be executed. The following times are possible: Morning(tips that may influence the day ahead. e.g. mindset, motivation), Noon(tips that are relevant for the second part of the day), Evening(tips that are relevant when the day's work is done), End of the day(tips that are relevant to finish the day, e.g. conclude about the day), Not relevant(tips for which the daytime does not seem to be relevant)"
-                                },
-                                "weekday": {
-                                    "type": "string",
-                                    "description": "here you are supposed to decide for which type of days the recommendation is relevant; the following weekdays are possible: Workdays, Weekend, Public/Personal Holiday, Not relevant"
-                                },
-                                "weather": {
-                                    "type": "string",
-                                    "description": "here you are supposed to assign one or more weather situations that are ideal for execution of the tip. The following weather situations are possible: Sunny(ideal for outdoor activity), Overcast(suitable for less intense outdoor tasks or reflective activities), Rainy(best for indoor-focused tasks)"
-                                },
-                                "concerns": {
-                                    "type": "string",
-                                    "description": "here you are supposed to assign one or more concerns for which the tip could be helpful. The following concerns are possible: Time Management, Self-Discipline(staying focused and avoiding distractions), Procrastination, Goal-Setting(Defining Goals and tracking progress toward them), Work-Life Balance, Stress Management, Self-Motivation(finding internal motivation to work on tasks), Workspace Management(e.g. noise, lightning, comfort), Sleep Quality, Mindset"
-                                },
-                                "season": {
-                                    "description": ""
-                                }
-                            },
-                            "required": ["tip", "information", "category", "goal", "focus", "activity_type", "daytime", "weekday", "weather", "concerns"]
-                        }
-                    }
-                }
-            }
-        }
-    }
-]
-
 new_tools = [
     {
         "type": "function",
@@ -109,11 +39,13 @@ new_tools = [
                                     "description": "assign your advice to an activity type that describes the key characteristic of the activity to execute the tip. the following types are possible: Creative, Exercise, Cognitive, Relax, Social, Time Management"
                                 },
                                 "categories": {
-                                    "type": "string",
+                                    "type": "array",
+                                    "items": {"type": "string"},
                                     "description": "assign your advice to categories. the following categories are possible: work, success, productivity, performance, focus, time management, happiness, mental, active reflection, awareness, well-being, health, fitness, social"
                                 },
                                 "concerns": {
-                                    "type": "string",
+                                    "type": "array",
+                                    "items": {"type": "string"},
                                     "description": """assign one concern for which the tip could be helpful. The following concerns are possible: 
                                     goal-setting(Defining Goals and tracking progress toward them), self-motivation(finding internal motivation to work on tasks), 
                                     self-direction(Taking initiative and making independent decisions to guide your work and priorities), 
@@ -165,83 +97,17 @@ new_tools = [
     }
 ]
 
-"""def generate_recommendations_from_folder(input_folder: Path, output_folder: Path, modelname: str, instruction_file: Path):
-    for folder in os.listdir(input_folder):
-        # get input text (summary)
-        summary_file_name = folder + ".txt"
-        summary_file_path = os.path.join(
-            input_folder, folder, summary_file_name)
-
-        try:
-            with Path(summary_file_path).open(encoding='utf-8', errors='replace') as f:
-                input_text = f.read()
-        except FileNotFoundError:
-            print(f"Input file not found: {summary_file_path}")
-        except Exception as e:
-            print(f"An error occured while trying to read the input file: {e}")
-
-        try:
-            with Path(instruction_file).open(encoding='utf-8', errors='replace') as f:
-                instruction_text = f.read()
-        except FileNotFoundError:
-            print(f"Instruction file not found: {instruction_file}")
-        except Exception as e:
-            print(
-                f"An error occured while trying to read the instruction file: {e}")
-
-        # completion
-        try:
-            print(f"Processing {summary_file_name}")
-            response = completion(
-                model=modelname,
-                messages=[
-                    {'role': 'system', 'content': instruction_text},
-                    {'role': 'user', 'content': f'Create recommendations based on the information of this summary: {input_text}'}
-                ],
-                tools=tools
-            )
-        except KeyError as e:
-            print(f"Keyerror: {e}")
-            return "An keyerror occured while processing the completion for summarization."
-        except APIError as e:
-            print(f"API error: {e}")
-            return "There was an issue with the API request."
-        except Exception as e:
-            print(f"Unexpected error: {e}")
-            return "An unexpected error occured."
-        # extract completion and add to output-json as 'output'
-        output = response.to_dict()
-        # to keep track of used instruction file
-        output["instruction"] = instruction_file.stem
-        '''
-        output["output"] = json.loads(
-            response.choices[0].message.tool_calls[0].function.arguments)
-        '''
-        output["output"] = [json.loads(c.function.arguments)
-                            for c in response.choices[0].message.tool_calls]
-
-        # create output file
-        output_path = os.path.join(output_folder, folder.replace(".txt", ""))
-        os.makedirs(output_path, exist_ok=True)
-        output_file = f"recommendations_{folder}.json"
-        with open(os.path.join(output_path, output_file), "w") as json_file:
-            json.dump(output, json_file, indent=4)
-
-        print(f'File saved at {output_path} as {output_file}\n')"""
-
 
 def generate_recommendations_from_file(input_text: str, modelname: str, instruction_file: str):
     try:
         with Path(instruction_file).absolute().resolve().open(encoding='utf-8', errors='replace') as f:
             instruction_text = f.read()
-    except FileNotFoundError:
-        print(f"Instruction file not found: {instruction_file}")
-    except PermissionError:
-        print(f"Permission for instructions file denied: {instruction_file}") 
+    except FileNotFoundError as e:
+        raise FileNotFoundError(f"File not found: {e}")
+    except PermissionError as e:
+        raise PermissionError(f"Permission for instruction denied: {e}")
     except Exception as e:
-        print(
-            f"An error occurred while trying to read the instruction file: {e}")
-        return None
+        raise Exception(f"Unexpected error occured: {e}")
 
     # completion
     try:
@@ -256,14 +122,11 @@ def generate_recommendations_from_file(input_text: str, modelname: str, instruct
             temperature=0.5
         )
     except KeyError as e:
-        print(f"Keyerror: {e}")
-        return None
+        raise KeyError(f"Keyerror: {e}")
     except APIError as e:
-        print(f"API error: {e}")
-        return None
+        raise APIError(f"API error: {e}")
     except Exception as e:
-        print(f"Unexpected error: {e}")
-        return None
+        raise Exception(f"Unexpected error: {e}")
 
     # extract completion and create output dictionary
     output = response.to_dict()
