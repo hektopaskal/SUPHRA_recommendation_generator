@@ -21,7 +21,7 @@ load_dotenv()
 app = typer.Typer()
 
 path_to_instruction_file = "/data/instructions/paper_to_rec_inst.txt"
-api_key = os.getenv('SEMANTIC_SCHOLAR_API_KEY')
+
 dois = []
 
 SEMANTIC_SCHOLAR_FIELDS = [
@@ -129,8 +129,9 @@ def pdf_to_tips(
     input_dir: str,
     output_dir: str,
     generator_instructions: str,
-    modelname: str
-):   
+    modelname: str,
+    keys: dict
+) -> pd.DataFrame :   
     """
     Generates recommendations from given PDF files and generates output dir with a folder for each paper containing .txt file with extracted text
     and .json file with recommendations and meta data.
@@ -139,9 +140,21 @@ def pdf_to_tips(
     input_path = Path(input_dir).resolve().absolute()
     output_path = Path(output_dir).resolve().absolute()
 
-    output_path.mkdir(parents=True, exist_ok=True)
-
+    # prepare output
+    # TODO move each pdf file to its directory
+    output_path.mkdir(parents=True, exist_ok=True) 
     merged_dfs = pd.DataFrame()
+
+    # look for API keys
+    for key in keys:
+        if keys[key] == "":
+            if not os.getenv(key): # check for key in environment variables
+                raise KeyError(f"{key} not found!")
+            else:
+                pass
+        else:
+            os.environ[key] = keys[key]
+    
 
     for pdf in input_path.glob('*.pdf'):
         # TODO: check whether .txt already exists
@@ -162,7 +175,7 @@ def pdf_to_tips(
             continue
 
         # Fetch metadata from Semantic Scholar
-        sch = SemanticScholar(api_key=api_key)
+        sch = SemanticScholar(api_key=os.getenv("SEMANTIC_SCHOLAR_API_KEY"))
         try:
             meta_data = sch.get_paper(doi, fields=SEMANTIC_SCHOLAR_FIELDS)
         except SemanticScholarException as e:

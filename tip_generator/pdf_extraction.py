@@ -23,8 +23,6 @@ app = typer.Typer()
 
 # extract DOI of a paper converted to txt file
 
-
-
 def get_doi(file_path: str) -> str:
     """
     Extract the DOI from a scientific paper.

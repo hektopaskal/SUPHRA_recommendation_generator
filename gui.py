@@ -211,7 +211,8 @@ class ExtractionFrame(customtkinter.CTkFrame):
             input_dir=self.target_dir,
             output_dir=self.target_dir,
             generator_instructions=path_to_instruction_file,
-            modelname=self.modelname.get()
+            modelname=self.modelname.get(),
+            keys=self.app.frames["Keys"].get_keys()
         )
         csv_path = Path(self.target_dir) / 'merged_data.csv'
         tips_df = pd.read_csv(csv_path)
@@ -432,11 +433,23 @@ class KeysFrame(customtkinter.CTkFrame):
         openai_api_label.grid(row=2, column=1, pady=3, sticky="ew")
         self.openai_api_entry = customtkinter.CTkEntry(self)
         self.openai_api_entry.grid(row=2, column=2, pady=3, sticky="ew")
+        openai_api_desc = customtkinter.CTkLabel(self, text="Environment variable:'OPENAI_API_KEY")
+        openai_api_desc.grid(row=2, column=3, pady=3, sticky="ew")
 
         semsch_api_label = customtkinter.CTkLabel(self, text="SemanticScholar API: ")
         semsch_api_label.grid(row=3, column=1, pady=3, sticky="ew")
         self.semsch_api_entry = customtkinter.CTkEntry(self)
         self.semsch_api_entry.grid(row=3, column=2, pady=3, sticky="ew")
+        semsch_api_desc = customtkinter.CTkLabel(self, text="Environment variable: 'SEMANTIC_SCHOLAR_API_KEY'")
+        semsch_api_desc.grid(row=3, column=3, pady=3, sticky="ew")
+
+    def get_keys(self):
+        keys = {
+            "OPENAI_API_KEY" : self.openai_api_entry.get(),
+            "SEMANTIC_SCHOLAR_API_KEY" : self.semsch_api_entry.get(),          
+        }
+        return keys
+
 
 class App:
     """Main application class to manage frames and navigation."""
