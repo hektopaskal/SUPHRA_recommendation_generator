@@ -7,7 +7,7 @@ import json
 load_dotenv()
 
 # format output by calling function
-new_tools = [
+tools = [
     {
         "type": "function",
         "function": {
@@ -118,7 +118,7 @@ def generate_recommendations_from_file(input_text: str, modelname: str, instruct
                 {'role': 'system', 'content': instruction_text},
                 {'role': 'user', 'content': f'Create recommendations based on the information of this summary: {input_text}'}
             ],
-            tools=new_tools,
+            tools=tools,
             temperature=0.5
         )
     except KeyError as e:
