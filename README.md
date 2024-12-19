@@ -1,5 +1,5 @@
 # SUPHRA Recommendation Generator
-A tool to extract, upload, and maintain productivity and health recommendations from scientific papers. Each LLM-generated recommendation source information from [Semantic Scholar API]() will be assigned.
+A tool to extract, upload, and maintain productivity and health recommendations from scientific papers. Each LLM-generated recommendation source information from [Semantic Scholar API](https://www.semanticscholar.org/product/api) will be assigned.
 
 
 <img src="assets/screenshot_extraction_frame.png" width="100%" align="center"> GUI Screenshot
