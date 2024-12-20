@@ -239,11 +239,9 @@ def pdf_to_tips_command(
     pdf_to_tips(input_dir=input_dir, output_dir=output_dir, modelname=modelname, generator_instructions=generator_instructions)
 
 # does not work yet!!!
-@app.command()
-def dois_to_tips(
+def doi_to_tips(
     dois: List[str] = typer.Argument(..., help="List of DOIs to process"),
-    output_dir: str = typer.Argument(...,
-                                     help="Directory to save the generated tips"),
+    output_dir: str = typer.Argument(..., help="Directory to save the generated tips"),
     semantic_scholar_api_key: Optional[str] = typer.Option(
         None, help="Semantic Scholar API key")
 ):
@@ -256,11 +254,16 @@ def dois_to_tips(
     for doi in dois:
         paper_file_name = f"{doi.replace('/', '_')}.txt"
 
-        # ... existing code for processing each DOI ...
-
         typer.echo(f"Processed DOI: {doi}")
 
     typer.echo("All DOIs processed successfully!\n")
+
+@app.command()
+def doi_to_tips_command(
+    dois: List[str] = typer.Argument(..., help="List of DOIs to process"),
+    output_dir: str = typer.Argument(..., help="Directory to save the generated tips")
+):
+    pass
 
 
 # run typer app
