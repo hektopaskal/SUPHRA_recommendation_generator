@@ -1,9 +1,10 @@
-name: environment_tip_generator  
+name: plotly_sb
 channels:
   - conda-forge
 dependencies:
   - python=3.11.10
   - pathlib
+  - pandas
   - litellm
   - python-dotenv
   - pip
@@ -13,10 +14,10 @@ dependencies:
   - scikit-learn
   - scipy
   - mariadb
+  - dash
+  - plotly
+  - loguru
   - pip:
     - getpaper
     - just-agents
     - sentence-transformers
-    - tkinterdnd2=0.4.2
-    - customtkinter=5.2.2
-    - tksheet>=7.2.23
