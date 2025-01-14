@@ -87,7 +87,7 @@ def convert_pdf(input_file: str, output_dir: str, num_pages: Optional[int] = Non
     Returns the path to the converted file.
     """
     input_path = Path(input_file)
-    output_path = Path(output_dir)
+    output_path = output_dir
 
     # Create the output folder if it doesn't exist
     output_path.mkdir(parents=True, exist_ok=True)
@@ -97,28 +97,33 @@ def convert_pdf(input_file: str, output_dir: str, num_pages: Optional[int] = Non
     
     # Check if the output file already exists
     output_txt_path = output_path / file_stem / f"{file_stem}.txt"
-    if output_txt_path.exists():
+
+    if Path(output_txt_path).exists():
         print(f"Skipping {file_name}: Output file already exists.")
         return str(output_txt_path)
-
-    # Ensure the parent directory of the output file exists
-    output_txt_path.parent.mkdir(parents=True, exist_ok=True)
+    else:
+        print("output_txt_path does not exist")
+        if not output_path:
+            print("outputpath neither!!!")
 
     print(f"Processing {input_file}...")
 
     # Step 1: Attempt to parse using the getpaper module
-    try_parse_paper(
-        paper=input_path,
-        folder=output_path,
-        parser=PDFParser.pdf_miner,
-        recreate_parent=False,
-        cleaning=True,
-        subfolder=False,
-        mode="single",
-        strategy="auto",
-        pdf_infer_table_structure=True,
-        include_page_breaks=False
-    )
+    try:
+        try_parse_paper(
+            paper=Path(input_path),
+            folder=Path(output_path),
+            parser=PDFParser.pdf_miner,
+            recreate_parent=False,
+            cleaning=True,
+            subfolder=False,
+            mode="single",
+            strategy="auto",
+            pdf_infer_table_structure=True,
+            include_page_breaks=False
+        )
+    except Exception as e:
+        print(f"Error parsing paper {input_path}: {e}")
 
     # Step 2: Check if the parsed text is empty or garbled
     if is_empty(output_txt_path):
