@@ -130,7 +130,7 @@ def pdf_to_tips(
     output_dir: str,
     generator_instructions: str,
     modelname: str,
-    keys: dict
+    #keys: dict
 ) -> pd.DataFrame :   
     """
     Generates recommendations from given PDF files and generates output dir with a folder for each paper containing .txt file with extracted text
@@ -139,13 +139,16 @@ def pdf_to_tips(
 
     input_path = Path(input_dir).resolve().absolute()
     output_path = Path(output_dir).resolve().absolute()
+    
+
 
     # prepare output
     # TODO move each pdf file to its directory
     output_path.mkdir(parents=True, exist_ok=True) 
+    
     merged_dfs = pd.DataFrame()
 
-    # look for API keys
+    '''# look for API keys
     for key in keys:
         if keys[key] == "":
             if not os.getenv(key): # check for key in environment variables
@@ -153,13 +156,13 @@ def pdf_to_tips(
             else:
                 pass
         else:
-            os.environ[key] = keys[key]
+            os.environ[key] = keys[key]'''
     
 
     for pdf in input_path.glob('*.pdf'):
         # TODO: check whether .txt already exists
         # Convert PDF to text
-        converted_pdf_path = convert_pdf(str(pdf), output_dir)
+        converted_pdf_path = convert_pdf(str(pdf), output_path)
         typer.echo(f"Converted PDF saved at {converted_pdf_path}")
 
         # Check if the converted file exists
