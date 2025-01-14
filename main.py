@@ -1,4 +1,4 @@
-from gui import start_gui
+from old_guiy import start_gui
 
 def main():
     start_gui()
