@@ -164,5 +164,8 @@ cython_debug/
 
 .testing/
 data/output
+data/temp
+data/archive
 data/papers_pdf
+backups/
 .vscode
