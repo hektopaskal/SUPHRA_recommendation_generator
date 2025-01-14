@@ -1,9 +1,11 @@
 import mariadb
+from mariadb import Connection
 import sys
 import pandas as pd
 from pathlib import Path
 import typer
 from typing import Optional
+from loguru import logger
 
 # for similarity search with sentence embedding:
 from sentence_transformers import SentenceTransformer
@@ -17,70 +19,31 @@ from collections import Counter
 # Create a Typer app
 app = typer.Typer()
 
-# Test connection to mariaDB
 
-
-def test_connection(
-    user: str,
-    password: str,
-    host: str,
-    port: int,
-    database: str,
-):
-    try:
-        mariadb.connect(
-            user=user,
-            password=password,
-            host=host,  # or 127.0.0.1
-            port=port,  # default mariadb port
-            database=database
-        )
-        return True
-    except mariadb.Error as e:
-        print(f"Error connecting to MariaDB: {e}")
-        return False
-
-# Set up connection to mariaDB; return connection
-
-
-def connect_to_maria(
-    user: str,
-    password: str,
-    host: str,
-    port: int,
-    database: str
-):
-    try:
-        connection = mariadb.connect(
-            user=user,
-            password=password,
-            host=host,
-            port=port,
-            database=database
-        )
-        return connection
-    except mariadb.Error as e:
-        print(f"Error connecting to MariaDB: {e}")
-        return None
-
-
-def insert_into_db(
-        login: dict,
-        recommendations: pd.DataFrame
+# Connect to MariaDB
+def connect_to_db(
+    login: dict
 ):
     try:
         conn = mariadb.connect(
             user=login["user"],
             password=login["password"],
-            host=login["host"],
-            port=login["port"],
-            database=login["database"],
+            host=login["host"],  # or 127.0.0.1
+            port=login["port"],  # default mariadb port
+            database=login["database"]
         )
+        logger.info("Successfully connected to the database.")
+        return conn
     except mariadb.Error as e:
-        print(f"MariaDB error: {e}")
+        logger.error(f"Error while connecting to the database: {e}")
+        return None
 
-    cursor = conn.cursor()
 
+def insert_into_db(
+        conn: Connection,
+        login: dict,
+        recommendations: pd.DataFrame
+):
     # build insertion statement
     table = login["table"]
     columns_str = ", ".join(recommendations.columns)  # columns as Str
@@ -90,46 +53,18 @@ def insert_into_db(
     stmt = f"INSERT INTO {table} ({columns_str}) VALUES ({value_subt})"
     # insert recommendations row by row
     recommendations.astype(str)
-    for _, row in recommendations.iterrows():  # _ is index
-        cursor.execute(stmt, tuple(row))
 
-    print(table)
-    print(recommendations["categories"])
-
-    conn.commit()
-    cursor.close()
-    conn.close()
-
-    print("Data inserted successfully!")
-
-
-@app.command()
-def connect_to_db_command(
-    user: str = typer.Argument(..., help="Username"),
-    password: str = typer.Argument(..., help="Password"),
-    host: str = typer.Argument(..., help="IP address of MariaDB"),
-    port: int = typer.Argument(..., help="Port"),
-    database: str = typer.Argument(..., help="Name of the DB")
-):
-    """Connect to MariaDB"""
     try:
-        connection = mariadb.connect(
-            user=user,
-            password=password,
-            host=host,  # or 127.0.0.1
-            port=port,  # default mariadb port
-            database=database
-        )
-        print("Connection successful!")
-        global login_params
-        login_params["user"] = user
-        login_params["password"] = password
-        login_params["host"] = host
-        login_params["port"] = port
-        login_params["database"] = database
-    except mariadb.Error as e:
-        print(f"Error connecting to MariaDB: {e}")
-        sys.exit(1)
+        cursor = conn.cursor()
+        for _, row in recommendations.iterrows():  # _ is index
+            cursor.execute(stmt, tuple(row))
+        conn.commit()
+        logger.info("Successfully uploaded to the database.")
+    except mariadb.Exception as e:
+        logger.error(f"Error while uploading to the database: {e}")
+    finally:
+        cursor.close()
+        logger.debug("Closed cursor after insert operation.")
 
 
 @app.command()
@@ -160,17 +95,22 @@ def insert_data_from_csv(csv_file_path: str = typer.Argument(..., help="Path to 
 
 @app.command()
 def find_similarities_command(
-    user: str = typer.Argument(..., help="MariaDB username"),
-    password: str = typer.Argument(..., help="MariaDB password"),
-    host: str = typer.Argument(..., help="Database host"),
-    port: int = typer.Argument(..., help="Database port"),
-    database: str = typer.Argument(..., help="Database name"),
     threshold: Optional[float] = typer.Option(
         4, help="Threshold for clustering. Set to 4, if not specified")
 ):
     """Find tips that are semantically similar."""
 
+    user = "root"
+    password = "rootpw"
+    host = "localhost"
+    port = 3306
+    database = "copy_fellmann"
+    table = "recommendation"
+
+
     model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
+
+
     try:
         connection = mariadb.connect(
             user=user,
@@ -185,13 +125,13 @@ def find_similarities_command(
         sys.exit(1)
 
     cursor = connection.cursor()
-    cursor.execute("SELECT ID, Tip FROM pt_recommendations")
+    cursor.execute(f"SELECT id, short_desc FROM {table}")
     tips = cursor.fetchall()
 
     # Create DataFrame with 'Tip' and '#' (index) columns
-    tips_df = pd.DataFrame(tips, columns=["ID", "Tip"])
+    tips_df = pd.DataFrame(tips, columns=["id", "short_desc"])
 
-    recommendations = tips_df["Tip"].tolist()
+    recommendations = tips_df["short_desc"].tolist()
 
     embeddings = model.encode(recommendations)
 
@@ -205,7 +145,7 @@ def find_similarities_command(
 
     # Group by cluster and get the indices of tips in each cluster
     clustered_tips = tips_df.groupby(
-        'Cluster')['ID'].apply(list).reset_index()
+        'Cluster')['id'].apply(list).reset_index()
 
     # Display the clusters with their corresponding IDs
     print(clustered_tips)
