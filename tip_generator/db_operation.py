@@ -19,11 +19,12 @@ from collections import Counter
 # Create a Typer app
 app = typer.Typer()
 
+logger.add(sys.stderr, level="INFO")
 
 # Connect to MariaDB
 def connect_to_db(
     login: dict
-):
+)-> Connection:
     try:
         conn = mariadb.connect(
             user=login["user"],
@@ -41,27 +42,28 @@ def connect_to_db(
 
 def insert_into_db(
         conn: Connection,
-        login: dict,
+        table: str,
         recommendations: pd.DataFrame
 ):
     # build insertion statement
-    table = login["table"]
+    table = table
     columns_str = ", ".join(recommendations.columns)  # columns as Str
     # value_subt = ["%s" for _ in range(len(recommendations.columns))] or :
-    # SQL placeholder for values in statement
-    value_subt = ", ".join(["%s"] * len(recommendations.columns))
+    value_subt = ", ".join(["%s"] * len(recommendations.columns)) # %s : SQL placeholder for values in statement
     stmt = f"INSERT INTO {table} ({columns_str}) VALUES ({value_subt})"
-    # insert recommendations row by row
     recommendations.astype(str)
-
+    # insert recommendations row by row
     try:
         cursor = conn.cursor()
         for _, row in recommendations.iterrows():  # _ is index
             cursor.execute(stmt, tuple(row))
         conn.commit()
         logger.info("Successfully uploaded to the database.")
-    except mariadb.Exception as e:
-        logger.error(f"Error while uploading to the database: {e}")
+    except mariadb.Error as e:
+        if e.errno == 1146:
+            raise Exception("Table does not exist!")
+        else:
+            logger.error(f"Error while uploading to the database: {e}")
     finally:
         cursor.close()
         logger.debug("Closed cursor after insert operation.")

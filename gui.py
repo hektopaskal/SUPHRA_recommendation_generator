@@ -1,13 +1,15 @@
 import os
 import base64
 from pathlib import Path
+from typing import Optional
+from mariadb import Connection
 
 from dash import Dash, html, dash_table, dcc, callback, Output, Input, State, dash_table
 import pandas as pd
 import plotly.express as px
 
 from tip_generator.pipeline import pdf_to_tips
-from tip_generator.db_operation import test_connection
+from tip_generator.db_operation import connect_to_db, insert_into_db
 
 # Incorporate data
 # df = pd.read_csv('merged_data.csv')
@@ -15,7 +17,11 @@ from tip_generator.db_operation import test_connection
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 # Initialize the app
-app = Dash(__name__, external_stylesheets=external_stylesheets)
+app = Dash(__name__, external_stylesheets=external_stylesheets,
+           suppress_callback_exceptions=True)
+
+# Store DB-Connection
+db_conn: Optional[Connection] = None
 
 # App layout
 app.layout = [
@@ -61,10 +67,12 @@ app.layout = [
                 html.Button('Apply to Database', id='apply-button', n_clicks=0, style={
                     "margin": "10px"
                 }),
+                # Div: Info
+                html.Label(id="info-label", children=[])
             ],),
             # SIMILARITIES VIEW
             dcc.Tab(label="Find Similarities", id="sim_view", children=[
-                
+
                 html.Div(dcc.Input(id='input-on-submit-text', type='text'))
             ]),
             # DATABASE VIEW
@@ -97,7 +105,7 @@ app.layout = [
                     # Port Input
                     html.Div([
                         html.Label("Port:"),
-                        dcc.Input(id="db-input-port", type="number",
+                        dcc.Input(id="db-input-port", type="number", value="",
                                   placeholder="Enter port (e.g., 3306)", style={"width": "100%"}),
                     ], style={"margin-left": "20px", "margin-bottom": "10px", "width": "30vw"}),
 
@@ -115,12 +123,13 @@ app.layout = [
                                   placeholder="Enter table name", style={"width": "100%"}),
                     ], style={"margin-left": "20px", "margin-bottom": "10px", "width": "30vw"}),
 
-                    # Submit Button
-                    html.Button("Submit and Test Connection", id="db-connect-button",
-                                n_clicks=0, style={"margin-top": "10px"}),
+                    # Connect Button
+                    html.Button("Connect", id="db-connect-button",
+                                n_clicks=0, style={"margin-left": "20px", "margin-top": "10px"}),
 
                     # Display test_db_connection() result
-                    html.Div(id="test-db-connection-result", children=[])
+                    html.Div(id="test-db-connection-result",
+                             children=[], style={"margin-left": "20px"})
                 ])
             ]),
         ],
@@ -128,6 +137,8 @@ app.layout = [
 ]
 
 # Funct: Button: Generate
+
+
 @callback(Output(component_id='table_div', component_property='children', allow_duplicate=True),
           Input(component_id='generate-button', component_property='n_clicks'),
           State("dnd-field", "contents"),
@@ -178,12 +189,13 @@ def update_output_table(n_clicks, contents, filenames, claim, model):
             sort_mode="multi",
             row_selectable="multi",
             row_deletable=True,
-            selected_columns=[],
             selected_rows=[],
         )
     return table
 
 # Funct: Button: Test DB-Connection
+
+
 @callback(Output("test-db-connection-result", "children"),
           Input("db-connect-button", "n_clicks"),
           State("db-input-user", "value"),
@@ -194,18 +206,72 @@ def update_output_table(n_clicks, contents, filenames, claim, model):
           State("db-input-table", "value"),
           prevent_initial_call=True)
 def test_db_conn_button(n_clicks, user, password, host, port, database, table):
-    login = {
-            "user" : user,
-            "password" : password,
-            "host" : host,
-            "port" : int(port) if not port == "" else 0,
-            "database" : database,
-            "table" : table         
-        }
-    if test_connection(login):
-        return "True"
+    db_login = {
+        "user": user,
+        "password": password,
+        "host": host,
+        "port": int(port) if not port == "" else 0,
+        "database": database,
+        "table": table
+    }
+    global db_conn
+    db_conn = connect_to_db(db_login)
+    if not db_conn == None:
+        print("Connection is" if type(db_conn)
+              is Connection else "Connection is NOT")
+        return f"Connected to {database}."
     else:
-        return "False"
+        return "Cant connect to database."
+
+# Funct: Button: Apply to DB
+
+
+@callback(Output("table", "data"),
+          Output("table", "selected_rows"),
+          Output("info-label", "children"),
+          Input("apply-button", "n_clicks"),
+          State("table", "selected_rows"),
+          State("table", "data"),
+          State("db-input-table", "value"),
+          prevent_initial_call=True,)
+def apply_to_db(n_clicks, selection, all_rows, table):
+    # seperate selected rows
+    sel_rows = pd.DataFrame()
+    updated_rows = pd.DataFrame()
+    print(all_rows)
+    print("list" if isinstance(all_rows, list) else "no list")
+    print("DF" if isinstance(all_rows, pd.DataFrame) else "no DF")
+    print("###################################################################")
+    '''for r in selection:
+        print(all_rows[r])
+        sel_rows = pd.concat([sel_rows, pd.DataFrame([all_rows[r]])], ignore_index=True)'''
+
+    for i, row in enumerate(all_rows):
+        if i not in selection:
+            updated_rows = pd.concat(
+                [updated_rows, pd.DataFrame([all_rows[i]])], ignore_index=True)
+        else:
+            sel_rows = pd.concat(
+                [sel_rows, pd.DataFrame([all_rows[i]])], ignore_index=True)
+
+    print('#############################################')
+    print(updated_rows)
+    print('#######################################################')
+    print(sel_rows)
+
+    print("Connection is" if type(db_conn)
+          is Connection else "Connection is NOT")
+    try:
+        insert_into_db(
+            conn=db_conn,
+            table=table,
+            recommendations=sel_rows
+        )
+    except Exception as e:
+        return all_rows, [], ["Table not found!"] # TODO keep selection after exception
+
+    return updated_rows.to_dict("records"), [], ["Successfully inserted data!"]
+
 
 # Run the app
 if __name__ == '__main__':
