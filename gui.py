@@ -238,14 +238,8 @@ def apply_to_db(n_clicks, selection, all_rows, table):
     # seperate selected rows
     sel_rows = pd.DataFrame()
     updated_rows = pd.DataFrame()
-    print(all_rows)
-    print("list" if isinstance(all_rows, list) else "no list")
-    print("DF" if isinstance(all_rows, pd.DataFrame) else "no DF")
-    print("###################################################################")
-    '''for r in selection:
-        print(all_rows[r])
-        sel_rows = pd.concat([sel_rows, pd.DataFrame([all_rows[r]])], ignore_index=True)'''
 
+    # iterate over rows and differentiate between selected and unselected rows
     for i, row in enumerate(all_rows):
         if i not in selection:
             updated_rows = pd.concat(
@@ -253,20 +247,14 @@ def apply_to_db(n_clicks, selection, all_rows, table):
         else:
             sel_rows = pd.concat(
                 [sel_rows, pd.DataFrame([all_rows[i]])], ignore_index=True)
-
-    print('#############################################')
-    print(updated_rows)
-    print('#######################################################')
-    print(sel_rows)
-
-    print("Connection is" if type(db_conn)
-          is Connection else "Connection is NOT")
+    # insert selected into DB
     try:
         insert_into_db(
             conn=db_conn,
             table=table,
             recommendations=sel_rows
         )
+    # this exception is only raised when the entered table cannot be found (see insert_into_db from tip_generator.db_operation)
     except Exception as e:
         return all_rows, [], ["Table not found!"] # TODO keep selection after exception
 
