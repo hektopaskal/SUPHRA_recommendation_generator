@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 from dotenv import load_dotenv
 import shutil
@@ -13,12 +14,14 @@ from semanticscholar import SemanticScholar
 
 import typer
 from typing import Optional, List
+from loguru import logger
 
 from litellm import completion
 from litellm.exceptions import APIError
 
 # Load environment variables from .env file
 load_dotenv()
+logger.add(sys.stderr, level="INFO")
 
 app = typer.Typer()
 
@@ -42,7 +45,7 @@ def get_doi(file_path: str) -> str:
             top_p=0.0
         )
         doi = response.choices[0].message.content
-        print(f"DOI: {doi}")
+        logger.info(f"DOI: {doi}")
         return doi
     except FileNotFoundError as e:
         raise e(f"File not found: {e}")
@@ -60,10 +63,10 @@ def is_empty(txt_file_path):
             else:
                 return False
     except FileNotFoundError:
-        print(f"File not found: {txt_file_path}")
+        logger.error(f"File not found: {txt_file_path}")
         return False
     except Exception as e:
-        print(f"An error occured: {e}")
+        logger.error(f"An error occured: {e}")
         return False
 
 # Function to extract text using tesseract OCR
@@ -100,15 +103,10 @@ def convert_pdf(input_file: str, output_dir: str, num_pages: Optional[int] = Non
     output_txt_path = output_path / file_stem / f"{file_stem}.txt"
 
     if Path(output_txt_path).exists():
-        print(f"Skipping {file_name}: Output file already exists.")
+        logger.info(f"Skipping {file_name}: Output file already exists.")
         return str(output_txt_path)
-    else:
-        # TODO exception handling
-        print("output_txt_path does not exist")
-        if not output_path:
-            print("outputpath neither!!!")
 
-    print(f"Processing {input_file}...")
+    logger.info(f"Processing {input_file}...")
 
     # Step 1: Attempt to parse using the getpaper module
     try:
@@ -125,17 +123,17 @@ def convert_pdf(input_file: str, output_dir: str, num_pages: Optional[int] = Non
             include_page_breaks=False
         )
     except Exception as e:
-        print(f"Error parsing paper {input_path}: {e}")
+        logger.error(f"Error parsing paper {input_path}: {e}")
 
     # Step 2: Check if the parsed text is empty or garbled
     if is_empty(output_txt_path):
-        print(f"No text detected in {file_name}, falling back to OCR...")
+        logger.error(f"No text detected in {file_name}, falling back to OCR...")
         # Step 3: Use OCR as a fallback
         ocr_fallback(input_file, output_txt_path)
 
     shutil.move(input_file, output_path/file_stem/file_name)
 
-    print(f"Finished processing {file_name}.")
+    logger.info(f"Finished processing {file_name}.")
     return str(output_txt_path)
 
 @app.command()
@@ -182,7 +180,7 @@ def convert_pdfs(
             output_txt_path = os.path.join(
                 output_dir, file_name.replace(".pdf", ""), file_name.replace(".pdf", ".txt"))
 
-            print(f"Processing {pdf_file_path}...")
+            logger.info(f"Processing {pdf_file_path}...")
 
             # Step 1: Attempt to parse using the getpaper module
             parse_try = try_parse_paper(
@@ -201,12 +199,12 @@ def convert_pdfs(
 
             # Step 2: Check if the parsed text is empty or garbled
             if is_empty(output_txt_path):
-                print(
+                logger.info(
                     f"No text detacted in {file_name}, falling back to OCR...")
                 # Step 3: Use OCR as a fallback
                 ocr_fallback(pdf_file_path, output_txt_path)
 
-            print(
+            logger.info(
                 f"Finished processing {file_name}. Saved to {output_txt_path}.\n")
 
 # New subcommand to search for papers using Semanticscholar

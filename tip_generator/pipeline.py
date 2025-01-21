@@ -168,17 +168,18 @@ def pdf_to_tips(
         # TODO: check whether .txt already exists
         # Convert PDF to text
         converted_pdf_path = convert_pdf(str(pdf), output_path)
+        logger.info("Conversion finished.")
         
         # Check if the converted file exists
         if not Path(converted_pdf_path).exists():
-            print(f"Error: Converted file not found at {converted_pdf_path}\n")
+            logger.error(f"Error: Converted file not found at {converted_pdf_path}\n")
             continue
 
         # Extract DOI
         try:
             doi = get_doi(converted_pdf_path)
         except Exception as e:
-            print(f"DOI-Extraction: {e} - Skipping this file!\n")
+            logger.error(f"DOI-Extraction: {e} - Skipping this file!\n")
             continue
 
         # Fetch metadata from Semantic Scholar
@@ -186,11 +187,10 @@ def pdf_to_tips(
         try:
             meta_data = sch.get_paper(doi, fields=SEMANTIC_SCHOLAR_FIELDS)
         except SemanticScholarException as e:
-            print(
-                f"Semantic-Scholar-API-Error occured: {e} - Skipping this file!\n")
+            logger.error(f"Semantic-Scholar-API-Error occured: {e} - Skipping this file!\n")
             continue
         except Exception as e:
-            print(f"Unkown error occured: {e}")
+            logger.error(f"Unkown error occured: {e}")
         # Convert semantic scholar object: Paper into meta_data dictionary
         meta_data_dict = scholar_paper_to_dict(meta_data)
         # add DOI to meta data dict
@@ -208,7 +208,7 @@ def pdf_to_tips(
                 instruction_file=generator_instructions
             )
         except Exception as e:
-            print(f"Generate-Function: {e} - Skipping this file!\n")
+            logger.error(f"Generate-Function: {e} - Skipping this file!\n")
             continue
         # merge recommendations and meta data
         recommendations["meta_data"] = meta_data_dict
@@ -222,13 +222,12 @@ def pdf_to_tips(
         # return recommendations as Pandas DataFrame
         merged_dfs =pd.concat([merged_dfs, dict_to_df(recommendations)])
 
-        print(
-            f"Processed {pdf.name} successfully. Output saved to {output_json_path}\n")
+        logger.info(f"Processed {pdf.name} successfully. Output saved to {output_json_path}\n")
     
-    print("All PDFs processed.")
+    logger.info("All PDFs processed.")
     # save recs_df as .csv file in output folder
     merged_dfs.to_csv(Path(output_dir, "merged_data.csv"))
-    print("Created csv file.\n")
+    logger.info("Created csv file.\n")
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     archive_path = Path("data/archive") / timestamp

@@ -2,9 +2,12 @@ from litellm import completion
 from litellm.exceptions import APIError
 from pathlib import Path
 from dotenv import load_dotenv
+import sys
+from loguru import logger
 import json
 
 load_dotenv()
+logger.add(sys.stderr, level="INFO")
 
 # format output by calling function
 tools = [
@@ -111,7 +114,7 @@ def generate_recommendations_from_file(input_text: str, modelname: str, instruct
 
     # completion
     try:
-        print("Processing input text...")
+        logger.info("Processing input text...")
         response = completion(
             model=modelname,
             messages=[
@@ -135,5 +138,5 @@ def generate_recommendations_from_file(input_text: str, modelname: str, instruct
     output["output"] = [json.loads(c.function.arguments)
                         for c in response.choices[0].message.tool_calls]
 
-    print("Recommendation generated successfully.")
+    logger.info("Recommendation generated successfully.")
     return output
