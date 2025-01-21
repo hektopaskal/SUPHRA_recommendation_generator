@@ -16,9 +16,8 @@ import numpy as np
 from collections import Counter
 
 
-# Create a Typer app
+# initialize typer and loguru
 app = typer.Typer()
-
 logger.add(sys.stderr, level="INFO")
 
 # Connect to MariaDB

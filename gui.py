@@ -67,6 +67,10 @@ app.layout = [
                 html.Button('Apply to Database', id='apply-button', n_clicks=0, style={
                     "margin": "10px"
                 }),
+                # DEBUG ONLY: open example table
+                html.Button('DEBUG ONLY: open table', id='debug-table-button', n_clicks=0, style={
+                    "margin": "10px"
+                }),
                 # Div: Info
                 html.Label(id="info-label", children=[])
             ],),
@@ -137,8 +141,6 @@ app.layout = [
 ]
 
 # Funct: Button: Generate
-
-
 @callback(Output(component_id='table_div', component_property='children', allow_duplicate=True),
           Input(component_id='generate-button', component_property='n_clicks'),
           State("dnd-field", "contents"),
@@ -165,15 +167,15 @@ def update_output_table(n_clicks, contents, filenames, claim, model):
 
             # Save the file to the output directory
             output_path = os.path.join(Path(
-                "C:/Users/Nutzer/iCloudDrive/_Longevity/py_plotly_test/tip_generator_rep/data/archive"), filename)
+                "C:/Users/Nutzer/iCloudDrive/_Longevity/py_plotly_test/tip_generator_rep/data/temp"), filename)
             with open(output_path, "wb") as f:
                 f.write(file_data)
 
         # Generate recommendations
         path_to_instruction_file = "data/instructions/paper_to_rec_inst.txt"
         df = pdf_to_tips(
-            input_dir="C:/Users/Nutzer/iCloudDrive/_Longevity/py_plotly_test/tip_generator_rep/data/archive",
-            output_dir="C:/Users/Nutzer/iCloudDrive/_Longevity/py_plotly_test/tip_generator_rep/data/archive",
+            input_dir="C:/Users/Nutzer/iCloudDrive/_Longevity/py_plotly_test/tip_generator_rep/data/temp",
+            output_dir="C:/Users/Nutzer/iCloudDrive/_Longevity/py_plotly_test/tip_generator_rep/data/temp",
             generator_instructions=path_to_instruction_file,
             modelname=model,
         )
@@ -194,8 +196,6 @@ def update_output_table(n_clicks, contents, filenames, claim, model):
     return table
 
 # Funct: Button: Test DB-Connection
-
-
 @callback(Output("test-db-connection-result", "children"),
           Input("db-connect-button", "n_clicks"),
           State("db-input-user", "value"),
@@ -224,8 +224,6 @@ def test_db_conn_button(n_clicks, user, password, host, port, database, table):
         return "Cant connect to database."
 
 # Funct: Button: Apply to DB
-
-
 @callback(Output("table", "data"),
           Output("table", "selected_rows"),
           Output("info-label", "children"),
@@ -256,10 +254,29 @@ def apply_to_db(n_clicks, selection, all_rows, table):
         )
     # this exception is only raised when the entered table cannot be found (see insert_into_db from tip_generator.db_operation)
     except Exception as e:
-        return all_rows, [], ["Table not found!"] # TODO keep selection after exception
+        return all_rows, selection, ["Table not found!"] # TODO keep selection after exception
 
     return updated_rows.to_dict("records"), [], ["Successfully inserted data!"]
 
+@callback(Output(component_id='table_div', component_property='children', allow_duplicate=True),
+          Input("debug-table-button", "n_clicks"),
+          prevent_initial_call=True)
+def open_debug_table(n_clicks):
+    df = pd.read_csv("data/archive/table_for_debug/merged_data.csv")
+    table = dash_table.DataTable(
+            id='table',
+            # "records" transforms into dictionary where each dictionary corresponds to a row
+            data=df.to_dict("records"),
+            columns=[{'id': i, 'name': i} for i in df.columns],
+            style_table={'overflowX': 'auto'},  # enables horizontal scrolling
+            editable=True,
+            sort_action="native",
+            sort_mode="multi",
+            row_selectable="multi",
+            row_deletable=True,
+            selected_rows=[],
+        )
+    return table
 
 # Run the app
 if __name__ == '__main__':

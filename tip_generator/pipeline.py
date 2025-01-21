@@ -1,13 +1,20 @@
 # python packages
 import os
+import sys
 import json
 from pathlib import Path
 from dotenv import load_dotenv
+import shutil
+from datetime import datetime
 
 import pandas as pd
 # for CLI
 import typer
 from typing import Optional, List
+
+from loguru import logger
+
+from loguru import logger
 # semanticscholar library (unofficial) TODO just use requests library?
 from semanticscholar import SemanticScholar, Paper, SemanticScholarException
 
@@ -17,10 +24,15 @@ from .dtypes_conversion import dict_to_df
 
 # load environment variables
 load_dotenv()
-# Create a Typer app
-app = typer.Typer()
 
-path_to_instruction_file = "/data/instructions/paper_to_rec_inst.txt"
+# initialize typer and loguru
+
+# initialize typer and loguru
+app = typer.Typer()
+logger.add(sys.stderr, level="INFO")
+logger.add(sys.stderr, level="INFO")
+
+path_to_instruction_file = "./data/instructions/paper_to_rec_inst.txt"
 
 dois = []
 
@@ -118,7 +130,7 @@ def scholar_paper_to_dict(paper: Paper) -> dict:
         "src_field_of_study": getattr(paper, "fieldsOfStudy"),
         #"src_doi"
         "src_hyperlink": getattr(paper, "url"),
-        "src_pub_venue": json.loads(str(getattr(paper, "publicationVenue")).replace("'", '"'))["name"],
+        "src_pub_venue": json.loads(str(getattr(paper, "publicationVenue")).replace("'", '"'))["name"] if not getattr(paper, "publicationVenue") == None else "None" ,
         "src_citations": getattr(paper, "citationCount"),
         "src_cit_influential": getattr(paper, "influentialCitationCount")
     }
@@ -140,8 +152,7 @@ def pdf_to_tips(
     input_path = Path(input_dir).resolve().absolute()
     output_path = Path(output_dir).resolve().absolute()
     
-
-
+    
     # prepare output
     # TODO move each pdf file to its directory
     output_path.mkdir(parents=True, exist_ok=True) 
@@ -163,8 +174,7 @@ def pdf_to_tips(
         # TODO: check whether .txt already exists
         # Convert PDF to text
         converted_pdf_path = convert_pdf(str(pdf), output_path)
-        typer.echo(f"Converted PDF saved at {converted_pdf_path}")
-
+        
         # Check if the converted file exists
         if not Path(converted_pdf_path).exists():
             print(f"Error: Converted file not found at {converted_pdf_path}\n")
@@ -225,6 +235,20 @@ def pdf_to_tips(
     # save recs_df as .csv file in output folder
     merged_dfs.to_csv(Path(output_dir, "merged_data.csv"))
     print("Created csv file.\n")
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    archive_path = Path("data/archive") / timestamp
+    archive_path.mkdir(parents=True, exist_ok=True)
+
+    for element in Path(input_path).iterdir():
+        shutil.move(str(element), str(archive_path / element.name))
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    archive_path = Path("data/archive") / timestamp
+    archive_path.mkdir(parents=True, exist_ok=True)
+
+    for element in Path(input_path).iterdir():
+        shutil.move(str(element), str(archive_path / element.name))
 
     return merged_dfs
 
