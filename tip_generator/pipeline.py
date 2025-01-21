@@ -1,13 +1,18 @@
 # python packages
 import os
+import sys
 import json
 from pathlib import Path
 from dotenv import load_dotenv
+import shutil
+from datetime import datetime
 
 import pandas as pd
 # for CLI
 import typer
 from typing import Optional, List
+
+from loguru import logger
 # semanticscholar library (unofficial) TODO just use requests library?
 from semanticscholar import SemanticScholar, Paper, SemanticScholarException
 
@@ -17,8 +22,10 @@ from .dtypes_conversion import dict_to_df
 
 # load environment variables
 load_dotenv()
-# Create a Typer app
+
+# initialize typer and loguru
 app = typer.Typer()
+logger.add(sys.stderr, level="INFO")
 
 path_to_instruction_file = "/data/instructions/paper_to_rec_inst.txt"
 
@@ -140,8 +147,6 @@ def pdf_to_tips(
     input_path = Path(input_dir).resolve().absolute()
     output_path = Path(output_dir).resolve().absolute()
     
-
-
     # prepare output
     # TODO move each pdf file to its directory
     output_path.mkdir(parents=True, exist_ok=True) 
@@ -225,6 +230,13 @@ def pdf_to_tips(
     # save recs_df as .csv file in output folder
     merged_dfs.to_csv(Path(output_dir, "merged_data.csv"))
     print("Created csv file.\n")
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    archive_path = Path("data/archive") / timestamp
+    archive_path.mkdir(parents=True, exist_ok=True)
+
+    for element in Path(input_path).iterdir():
+        shutil.move(str(element), str(archive_path / element.name))
 
     return merged_dfs
 

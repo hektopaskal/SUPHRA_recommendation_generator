@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+import shutil
 
 from getpaper.parse import try_parse_paper, PDFParser
 from langchain_community.document_loaders import PDFMinerLoader
@@ -130,6 +131,8 @@ def convert_pdf(input_file: str, output_dir: str, num_pages: Optional[int] = Non
         print(f"No text detected in {file_name}, falling back to OCR...")
         # Step 3: Use OCR as a fallback
         ocr_fallback(input_file, output_txt_path)
+
+    shutil.move(input_file, output_path/file_stem/file_name)
 
     print(f"Finished processing {file_name}.")
     return str(output_txt_path)
