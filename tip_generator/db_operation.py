@@ -44,6 +44,9 @@ def insert_into_db(
         table: str,
         recommendations: pd.DataFrame
 ):
+    """
+    Inserts recommendations that are stored in pandas DataFrame with already matching column names!
+    """
     # build insertion statement
     table = table
     columns_str = ", ".join(recommendations.columns)  # columns as Str
@@ -68,31 +71,31 @@ def insert_into_db(
         logger.debug("Closed cursor after insert operation.")
 
 
-@app.command()
-def insert_data_from_csv(csv_file_path: str = typer.Argument(..., help="Path to csv file")):
-    """Give Path to csv_file and insert data from a CSV file into MariaDB."""
-
-    connection = 0
-    cursor = connection.cursor()
-
-    df = pd.read_csv(csv_file_path)
-    df = df.astype(str)
-
-    for _, row in df.iterrows():  # _ is index
-        sql_query = "INSERT INTO pt_recommendations (Tip, Information, Category, Goal, Focus, Activity_type, Daytime, Weekday, Validity_Flag, Weather, Concerns, AuthorsPaperCountCitationCount, citationCount, fieldsOfStudy, influentialCitationCount, publicationDate, publicationTypes, publicationVenue, referenceCount, title, tldr, url) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-        cursor.execute(sql_query, tuple(row))
-
-    connection.commit()
-    cursor.close()
-    connection.close()
-
-    print("Data inserted successfully!")
-
-# Delete recommendations by their ID
+# Delete recommendations by their ID TODO?
 
 
 # Find similar recommendations via sentence embeddings
+def find_similarities(
+        conn: Connection,
+        table: str,
+        th: int #treshold for semantic similarity clustering
+):
+    model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
 
+    cursor = conn.cursor()
+    cursor.execute(f"SELECT id, short_desc FROM {table}")
+    tips = cursor.fetchall()
+
+    embeddings = model.encode(tips)
+
+    # Perform Agglomerative Clustering
+    agg_clustering = AgglomerativeClustering(
+        n_clusters=None, distance_threshold=th, linkage='ward')
+    clusters = agg_clustering.fit_predict(embeddings)
+
+    tips["cluster"] = clusters
+
+    print(tips)
 
 @app.command()
 def find_similarities_command(
@@ -186,7 +189,25 @@ def find_similarities_command(
 
     return True
 
+@app.command()
+def insert_data_from_csv(csv_file_path: str = typer.Argument(..., help="Path to csv file")):
+    """Give Path to csv_file and insert data from a CSV file into MariaDB."""
 
+    connection = 0
+    cursor = connection.cursor()
+
+    df = pd.read_csv(csv_file_path)
+    df = df.astype(str)
+
+    for _, row in df.iterrows():  # _ is index
+        sql_query = "INSERT INTO pt_recommendations (Tip, Information, Category, Goal, Focus, Activity_type, Daytime, Weekday, Validity_Flag, Weather, Concerns, AuthorsPaperCountCitationCount, citationCount, fieldsOfStudy, influentialCitationCount, publicationDate, publicationTypes, publicationVenue, referenceCount, title, tldr, url) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+        cursor.execute(sql_query, tuple(row))
+
+    connection.commit()
+    cursor.close()
+    connection.close()
+
+    print("Data inserted successfully!")
 
 
 # run typer app
