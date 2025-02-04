@@ -25,7 +25,8 @@ load_dotenv()
 
 # initialize typer and loguru
 app = typer.Typer()
-logger.add(sys.stderr, level="INFO")
+logger.remove()
+logger.add(sys.stdout, level="INFO")
 
 path_to_instruction_file = "./data/instructions/paper_to_rec_inst.txt"
 

@@ -21,7 +21,8 @@ from litellm.exceptions import APIError
 
 # Load environment variables from .env file
 load_dotenv()
-logger.add(sys.stderr, level="INFO")
+logger.remove()
+logger.add(sys.stdout, level="INFO")
 
 app = typer.Typer()
 

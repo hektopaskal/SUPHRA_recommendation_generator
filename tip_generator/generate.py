@@ -7,7 +7,8 @@ from loguru import logger
 import json
 
 load_dotenv()
-logger.add(sys.stderr, level="INFO")
+logger.remove()
+logger.add(sys.stdout, level="INFO")
 
 # format output by calling function
 tools = [
