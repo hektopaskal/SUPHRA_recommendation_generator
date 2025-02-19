@@ -5,26 +5,24 @@ A tool to extract, upload, and maintain productivity and health recommendations 
 <img src="assets/screenshot_extraction_frame.png" width="100%" align="center"> GUI Screenshot
 
 
-## 🖥️How to use with GUI
+## 📖How to use
 **1. Set up keys**
-You can store your Keys in your environment variables or navigate to *Keys* and enter them there.
+To generate recommendations you necessarily need to add an [OpenAi API key](https://openai.com/index/openai-api/), since OpenAi´s GPT models are the only supported models so far. A [Semantic Scholar API](https://www.semanticscholar.org/product/api) is also required for usage.
+To set up your keys just fill in `.env` like it is done in [.env.template](/.env.template).
 
-**2. Feed your papers** To hand in your PDFs to the tool, collect them in a folder and drop this folder on the drag-and-drop field. It is suggested that nothing else be stored in this folder. 
+**2. Feed your papers** 
+To hand in your scientific papers just select them via the drag and drop field in the 'Extraction' view. It is recommended to not upload too many papers at ones scince you will probably lose track of them. Start with 1-2 papers to see how it works.
 
 **3. Choose a model** The only model that is currently supported is OpenAIs GPT-4o-mini. Depending on requirements more models will be added. Be sure to provide the required keys for the chosen model.
 
 **4. Generate!** Click on *Generate Recommendations* and the model will analyze what you have given to it. 
 
-## ⌨️ How to use with CLI
-...
-
-
 ## 📅 Output Table
 | **Field** | **Describtion** |
 |-----------|-----------------|
-| short_desc | desc |
-| long_desc | desc |
-| goal | desc | 
+| short_desc | A short describtion of the recommended tip. |
+| long_desc | A more informative version of the tip which also introduces the reader to the study from which the tip comes from. |
+| goal | What should be achieved when the tip is excuded? Possible values: `augment`(should be mentioned when improving on something), `prevent`(should be mentioned when avoiding negative impact), `recover`(should be mentioned when restoring personal resources), `maintain`(Preserving current levels of performance, well-being, or resources to ensure stability and consistency) | 
 | activity_type | desc |
 | categories | desc |
 | concerns | desc |
