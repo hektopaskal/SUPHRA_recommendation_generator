@@ -169,32 +169,33 @@ def update_output_table(n_clicks, contents, filenames, claim, model):
 
             # Save the file to the output directory
             output_path = os.path.join(Path(
-                "C:/Users/Nutzer/iCloudDrive/_Longevity/py_plotly_test/tip_generator_rep/data/temp"), filename)
+                "data/temp"), filename)
             with open(output_path, "wb") as f:
                 f.write(file_data)
 
     # Generate recommendations
     path_to_instruction_file = "data/instructions/paper_to_rec_inst.txt"
     df = pdf_to_tips(
-        input_dir="C:/Users/Nutzer/iCloudDrive/_Longevity/py_plotly_test/tip_generator_rep/data/temp",
-        output_dir="C:/Users/Nutzer/iCloudDrive/_Longevity/py_plotly_test/tip_generator_rep/data/temp",
+        input_dir="data/temp",
+        output_dir="data/temp",
         generator_instructions=path_to_instruction_file,
         modelname=model,
     )
-    if claim == []:
-        table = dash_table.DataTable(
-            id='table',
-            # "records" transforms into dictionary where each dictionary corresponds to a row
-            data=df.to_dict("records"),
-            columns=[{'id': i, 'name': i} for i in df.columns],
-            style_table={'overflowX': 'auto'},  # enables horizontal scrolling
-            editable=True,
-            sort_action="native",
-            sort_mode="multi",
-            row_selectable="multi",
-            row_deletable=True,
-            selected_rows=[],
-        )
+    # if claim == []:
+    table = dash_table.DataTable(
+        id='table',
+        # "records" transforms into dictionary where each dictionary corresponds to a row
+        data=df.to_dict("records"),
+        columns=[{'id': i, 'name': i} for i in df.columns],
+        style_table={'overflowX': 'auto'},  # enables horizontal scrolling
+        editable=True,
+        sort_action="native",
+        sort_mode="multi",
+        row_selectable="multi",
+        row_deletable=True,
+        selected_rows=[],
+    )
+
     return table
 
 # Funct: Button: Test DB-Connection
@@ -220,16 +221,10 @@ def test_db_conn_button(n_clicks, user, password, host, port, database, table):
     }
     global db_conn
     db_conn = connect_to_db(db_login)
-    if not db_conn == None:
-        print("Connection is" if type(db_conn)
-              is Connection else "Connection is NOT")
-        return f"Connected to {database}."
-    else:
-        return "Cant connect to database."
 
 # Funct: Button: Apply to DB
 
-
+# TODO: Keep recs in UI if upload to DB fails ! IMPORTANT !
 @callback(Output("table", "data"),
           Output("table", "selected_rows"),
           Output("info-label", "children"),
@@ -270,7 +265,7 @@ def apply_to_db(n_clicks, selection, all_rows, table):
           Input("debug-table-button", "n_clicks"),
           prevent_initial_call=True)
 def open_debug_table(n_clicks):
-    df = pd.read_csv("data/archive/table_for_debug/merged_data.csv")
+    df = pd.read_csv("data/archive/complete run/merged_data.csv")
     table = dash_table.DataTable(
         id='table',
         # "records" transforms into dictionary where each dictionary corresponds to a row
@@ -287,6 +282,8 @@ def open_debug_table(n_clicks):
     return table
 
 
-# Run the app
-if __name__ == '__main__':
+def start_gui():
     app.run(debug=True)
+'''# Run the app
+if __name__ == '__main__':
+    app.run(debug=True)'''
