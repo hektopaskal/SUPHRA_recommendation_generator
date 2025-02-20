@@ -11,11 +11,11 @@ To generate recommendations you necessarily need to add an [OpenAi API key](http
 To set up your keys just fill in `.env` like it is done in [.env.template](/.env.template).
 
 **2. Feed your papers.** 
-To hand in your scientific papers just select them via the drag and drop field in the 'Extraction' view. It is recommended to not upload too many papers at ones scince you will probably lose track of them. Start with 1-2 papers to see how it works.
+To hand in your scientific papers just select them via the drag-and-drop field in the 'Extraction' view. It is recommended to not upload too many documents at once since you will probably lose track of them. Start with 1-2 papers to see how it works.
 
-**3. Choose a model.** The only model that is currently supported is OpenAIs GPT-4o-mini. Depending on requirements more models will be added. Be sure to provide the required keys for the chosen model.
+**3. Choose a model.** The only model that is currently supported is OpenAIs GPT-4o-mini. Depending on requirements, more models will be added. Be sure to provide the required keys for the chosen model.
 
-**4. Generate!** Click on *Generate Recommendations* and the model will analyze what you have given to it. 
+**4. Generate!** Click on *Generate Recommendations* and the model will analyze what you have given towards it. 
 
 ## 📅 Output Table
 | **Field** | **Describtion** |
