@@ -141,8 +141,6 @@ app.layout = [
 ]
 
 # Funct: Button: Generate
-
-
 @callback(Output(component_id='table_div', component_property='children', allow_duplicate=True),
           Input(component_id='generate-button', component_property='n_clicks'),
           State("dnd-field", "contents"),
@@ -188,6 +186,7 @@ def update_output_table(n_clicks, contents, filenames, claim, model):
         data=df.to_dict("records"),
         columns=[{'id': i, 'name': i} for i in df.columns],
         style_table={'overflowX': 'auto'},  # enables horizontal scrolling
+        style_cell={'textAlign': 'left'},
         editable=True,
         sort_action="native",
         sort_mode="multi",
@@ -272,6 +271,7 @@ def open_debug_table(n_clicks):
         data=df.to_dict("records"),
         columns=[{'id': i, 'name': i} for i in df.columns],
         style_table={'overflowX': 'auto'},  # enables horizontal scrolling
+        style_cell={'textAlign': 'left'},
         editable=True,
         sort_action="native",
         sort_mode="multi",
