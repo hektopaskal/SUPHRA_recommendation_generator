@@ -69,7 +69,7 @@ tools = [
                                 },
                                 "weekdays": {
                                     "type": "string",
-                                    "description": "decide for which type of days the recommendation is relevant; the following weekdays are possible: workdays, weekend, week start, end of workweek, public holiday, , any(if it doesnt matter)"
+                                    "description": "decide for which type of days the recommendation is relevant; the following weekdays are possible: workdays, weekend, week start, end of workweek, public holiday, any(if it doesnt matter)"
                                 },
                                 "season": {
                                     "type": "string",
