@@ -166,7 +166,6 @@ def pdf_to_tips(
     
 
     for pdf in input_path.glob('*.pdf'):
-        # TODO: check whether .txt already exists
         # Convert PDF to text
         converted_pdf_path = convert_pdf(str(pdf), output_path)
         logger.info("Conversion finished.")
@@ -187,11 +186,13 @@ def pdf_to_tips(
         sch = SemanticScholar(api_key=os.getenv("SEMANTIC_SCHOLAR_API_KEY"))
         try:
             meta_data = sch.get_paper(doi, fields=SEMANTIC_SCHOLAR_FIELDS)
-        except SemanticScholarException as e:
+        #except SemanticScholarException as e:
+        #    logger.error(f"Semantic-Scholar-API-Error occured: {e} - Skipping this file!\n")
+        #    continue
+        # TODO! try to catch SemanticScholarException throws another error
+        except Exception as e:
             logger.error(f"Semantic-Scholar-API-Error occured: {e} - Skipping this file!\n")
             continue
-        except Exception as e:
-            logger.error(f"Unkown error occured: {e}")
         # Convert semantic scholar object: Paper into meta_data dictionary
         meta_data_dict = scholar_paper_to_dict(meta_data)
         # add DOI to meta data dict
@@ -220,7 +221,7 @@ def pdf_to_tips(
             json.dump(recommendations, json_file,
                       ensure_ascii=False, indent=4)
 
-        # return recommendations as Pandas DataFrame
+        # return recommendations as DataFrame
         merged_dfs =pd.concat([merged_dfs, dict_to_df(recommendations)])
 
         logger.info(f"Processed {pdf.name} successfully. Output saved to {output_json_path}\n")
@@ -230,7 +231,7 @@ def pdf_to_tips(
     merged_dfs.to_csv(Path(output_dir, "merged_data.csv"))
     logger.info("Created csv file.\n")
 
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     archive_path = Path("data/archive") / timestamp
     archive_path.mkdir(parents=True, exist_ok=True)
 

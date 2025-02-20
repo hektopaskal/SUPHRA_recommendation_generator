@@ -70,9 +70,7 @@ def is_empty(txt_file_path):
         logger.error(f"An error occured: {e}")
         return False
 
-# Function to extract text using tesseract OCR
-
-
+# extract text using tesseract OCR
 def ocr_fallback(pdf_file_path: Path, txt_file_path: Path):
     ocr_text = ""
     pages = convert_from_path(pdf_file_path)  # pdf2image
@@ -80,12 +78,10 @@ def ocr_fallback(pdf_file_path: Path, txt_file_path: Path):
         # Perform OCR on each page image
         ocr_text += pytesseract.image_to_string(page) + "\n"
     # Step 4: Save the extracted text to the output folder
-    with open(txt_file_path, 'w', encoding='utf-8') as output_file:  # utf-16/32????
+    with open(txt_file_path, 'w', encoding='utf-8') as output_file:  # utf-16/32???
         output_file.write(ocr_text)
 
 # Takes a single PDF file and converts it into a txt file
-
-
 def convert_pdf(input_file: str, output_dir: str, num_pages: Optional[int] = None) -> str:
     """
     Process a single PDF file and save the result in the output directory.
@@ -109,7 +105,7 @@ def convert_pdf(input_file: str, output_dir: str, num_pages: Optional[int] = Non
 
     logger.info(f"Processing {input_file}...")
 
-    # Step 1: Attempt to parse using the getpaper module
+    # Step 1: Attempt to parse using getpaper module
     try:
         try_parse_paper(
             paper=Path(input_path),
@@ -132,6 +128,7 @@ def convert_pdf(input_file: str, output_dir: str, num_pages: Optional[int] = Non
         # Step 3: Use OCR as a fallback
         ocr_fallback(input_file, output_txt_path)
 
+    # move pdf file to its dedicated folder
     shutil.move(input_file, output_path/file_stem/file_name)
 
     logger.info(f"Finished processing {file_name}.")
