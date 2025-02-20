@@ -6,14 +6,14 @@ A tool to extract, upload, and maintain productivity and health recommendations 
 
 
 ## 📖How to use
-**1. Set up keys**
+**1. Set up keys.**
 To generate recommendations you necessarily need to add an [OpenAi API key](https://openai.com/index/openai-api/), since OpenAi´s GPT models are the only supported models so far. A [Semantic Scholar API](https://www.semanticscholar.org/product/api) is also required for usage.
 To set up your keys just fill in `.env` like it is done in [.env.template](/.env.template).
 
-**2. Feed your papers** 
+**2. Feed your papers.** 
 To hand in your scientific papers just select them via the drag and drop field in the 'Extraction' view. It is recommended to not upload too many papers at ones scince you will probably lose track of them. Start with 1-2 papers to see how it works.
 
-**3. Choose a model** The only model that is currently supported is OpenAIs GPT-4o-mini. Depending on requirements more models will be added. Be sure to provide the required keys for the chosen model.
+**3. Choose a model.** The only model that is currently supported is OpenAIs GPT-4o-mini. Depending on requirements more models will be added. Be sure to provide the required keys for the chosen model.
 
 **4. Generate!** Click on *Generate Recommendations* and the model will analyze what you have given to it. 
 
@@ -29,13 +29,11 @@ To hand in your scientific papers just select them via the drag and drop field i
 | daytime | When should the tip ideally be executed? Possible values: `morning`(tips that may influence the day ahead. e.g. mindset, motivation), `noon`(tips that are relevant for the second part of the day), `evening`(tips that are relevant when the day's work is done), `end of day`(tips that are relevant to finish the day, e.g. conclude about the day), `any`(if it doesnt matter) |
 | wekkdays | For which type of days is the tip relevant? Possible values: `workdays`, `weekend`, `week start`, `end of workweek`, `public holiday`, `any`(if it doesnt matter) |
 | season | In which season should the tip ideally be executed? Possible values: `any`, `spring`, `summer`, `autumn`, `winter`, `holiday season`(starting in late November and lasting until the begin of January), `summer vacation` |
-| is_outdoor | Is the tip most probably executed outdoors? outdoor:`TRUE`, indoor:`FALSE`  |
-| is_basic | desc |
-| is_advanced | desc |
-| gender | desc |
-| src_title | desc |
-| src_reference | desc |
-| src_pub_year | desc |
+| is_outdoor | Is the tip most probably executed outdoors? outdoor: `TRUE`;  indoor: `FALSE`  |
+| is_advanced | Is the tip executable for users with low health literacy? yes: `TRUE`; no: `FALSE` |
+| gender | Is the tip relevant for anybody or only for a specific gender? (e.g. regarding menstrual cycle or menopause) Possible values: `male`, `female`, `any` |
+| src_title | Title of the regarding paper. (SemanticScholar) |
+| src_pub_year | Publication year of the regarding paper. (SemanticScholar) |
 | src_is_journal | desc |
 | src_pub_type | desc |
 | src_field_of_study | desc |
