@@ -34,17 +34,16 @@ To hand in your scientific papers just select them via the drag-and-drop field i
 | gender | Is the tip relevant for anybody or only for a specific gender? (e.g. regarding menstrual cycle or menopause) Possible values: `male`, `female`, `any` |
 | src_title | Title of the regarding paper. (SemanticScholar) |
 | src_pub_year | Publication year of the regarding paper. (SemanticScholar) |
-| src_is_journal | desc |
-| src_pub_type | desc |
-| src_field_of_study | desc |
-| src_doi | desc |
-| src_hyperlink | desc |
-| src_pub_venue | desc |
-| src_citations | desc |
-| src_cit_influential | desc |
-| created_at | desc |
-| modified_at | desc |
-| risk | desc |
-| is_approved | desc |
+| src_pub_type | Specifies categories of scholarly works. Possible values: see `publicationTypes` on [SemanticScholarAPI](https://api.semanticscholar.org/api-docs/graph#tag/Paper-Data/operation/get_graph_paper_relevance_search) |
+| src_field_of_study | Specifies the subject areas in which the paper is located. Possible values: see `fieldsOfStudy` on [SemanticScholarAPI](https://api.semanticscholar.org/api-docs/graph#tag/Paper-Data/operation/get_graph_paper_relevance_search) |
+| src_doi | Paper's DOI |
+| src_hyperlink | URL to paper's SemanticScholar entry. |
+| src_pub_venue | Venue the paper was published in. |
+| src_citations | Number of citations of the paper. |
+| src_cit_influential | Number of 'highly influential' citations of the paper. (see [What are highly influential citations?](https://www.semanticscholar.org/faq/influential-citations)) |
+| created_at | Timestamp that will be set by the database. It therefore contains the time of the upload to the database, not the time of creation by the model. |
+| modified_at | Timestamp of last modification in the database. |
+| risk | `NOT YET IMPLEMENTED` |
+| is_approved | `NOT YET IMPLEMENTED` |
 
 The prompt that is used for the generation is based on [this instructions text](./data/instructions/paper_to_rec_inst.txt). To keep a clear output structure function calling is used (see *tools* in [generate.py](./tip_generator/)).
