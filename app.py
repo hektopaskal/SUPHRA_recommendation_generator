@@ -2,7 +2,10 @@ import os
 import base64
 from pathlib import Path
 from typing import Optional
+
 from mariadb import Connection
+from sqlalchemy import create_engine, text
+from sqlalchemy.orm import sessionmaker
 
 from dash import Dash, html, dash_table, dcc, callback, Output, Input, State, dash_table
 import pandas as pd
@@ -11,26 +14,38 @@ import plotly.express as px
 from tip_generator.pipeline import pdf_to_tips
 from tip_generator.db_operation import connect_to_db, insert_into_db
 
-# Incorporate data
-# df = pd.read_csv('merged_data.csv')
-
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 # Initialize the app
 app = Dash(__name__, external_stylesheets=external_stylesheets,
            suppress_callback_exceptions=True)
 
-# Store DB-Connection
-db_conn: Optional[Connection] = None
+# Create DB connection pool
+# URL that points to the database ...//username:password@host:port/database
+DATABASE_URL = "mariadb+mariadbconnector://root:rootpw@localhost:3306/copy_fellmann"
+# Engine for connection pool
+engine = create_engine(
+    DATABASE_URL,
+    pool_size=5,
+    max_overflow=2,
+    pool_timeout=30,
+    pool_recycle=1800,
+    pool_pre_ping=True,
+    echo=False
+)
+# SessionLocal hands out a session from the pool when needed
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
 
 # App layout
 app.layout = [
     html.H1(children='SUPHRA Recommendation Generator',
             style={"font-weight": "bold"}),
     dcc.Tabs(
-        id="tab",
+        id="views",
         value="extract_view",
         children=[
+            # ###########################################################################################################
             # EXTRACT VIEW
             dcc.Tab(label="Extract", id="extract_view", children=[
                 # DnD field for file upload
@@ -74,17 +89,17 @@ app.layout = [
                 # Div: Info
                 html.Label(id="info-label", children=[])
             ],),
+            # ###########################################################################################################
             # SIMILARITIES VIEW
             dcc.Tab(label="Find Similarities", id="sim_view", children=[
-
-                html.Div(dcc.Input(id='input-on-submit-text', type='text'))
+                html.H3("Find Similar Recommendations"),
             ]),
+            # ###########################################################################################################
             # DATABASE VIEW
             dcc.Tab(label="Connect to DB", children=[
                 html.Div([
                     html.H3("Database Connection Settings",
                             style={"margin-bottom": "15px"}),
-
                     # User Input
                     html.Div([
                         html.Label("User:"),
@@ -134,13 +149,31 @@ app.layout = [
                     # Display test_db_connection() result
                     html.Div(id="test-db-connection-result",
                              children=[], style={"margin-left": "20px"})
-                ])
+                ], style={'width': '45%', 'display': 'inline-block', 'verticalAlign': 'top'}),
+                html.Div([
+                    html.H4("List 2"),
+                    html.Ul([
+                            html.Li("Item A"),
+                            html.Li("Item B"),
+                            html.Li("Item C")
+                            ]),
+                    # Test Connect Button
+                    html.Button("Test", id="pool-connect-button",
+                                n_clicks=0, style={"margin-left": "20px", "margin-top": "10px"}),
+                    # Display test_pool_connection() result
+                    html.Div(id="test-pool-connection-result",
+                             children=[], style={"margin-left": "20px"})
+                ], style={'width': '45%', 'display': 'inline-block', 'verticalAlign': 'top'}),
             ]),
-        ],
+        ]
     ),
 ]
 
-# Funct: Button: Generate
+# ###########################################################################################################
+# Extract View
+# ###########################################################################################################
+
+
 @callback(Output(component_id='table_div', component_property='children', allow_duplicate=True),
           Input(component_id='generate-button', component_property='n_clicks'),
           State("dnd-field", "contents"),
@@ -150,6 +183,9 @@ app.layout = [
           prevent_initial_call=True
           )
 def update_output_table(n_clicks, contents, filenames, claim, model):
+    """
+    Funct: Button: Generate
+    """
     if not contents or not filenames:
         return html.Div("No files uploaded.")  # Handle no files uploaded
 
@@ -197,33 +233,7 @@ def update_output_table(n_clicks, contents, filenames, claim, model):
 
     return table
 
-# Funct: Button: Test DB-Connection
 
-
-@callback(Output("test-db-connection-result", "children"),
-          Input("db-connect-button", "n_clicks"),
-          State("db-input-user", "value"),
-          State("db-input-password", "value"),
-          State("db-input-host", "value"),
-          State("db-input-port", "value"),
-          State("db-input-database", "value"),
-          State("db-input-table", "value"),
-          prevent_initial_call=True)
-def test_db_conn_button(n_clicks, user, password, host, port, database, table):
-    db_login = {
-        "user": user,
-        "password": password,
-        "host": host,
-        "port": int(port) if not port == "" else 0,
-        "database": database,
-        "table": table
-    }
-    global db_conn
-    db_conn = connect_to_db(db_login)
-
-# Funct: Button: Apply to DB
-
-# TODO: Keep recs in UI if upload to DB fails ! IMPORTANT !
 @callback(Output("table", "data"),
           Output("table", "selected_rows"),
           Output("info-label", "children"),
@@ -233,6 +243,10 @@ def test_db_conn_button(n_clicks, user, password, host, port, database, table):
           State("db-input-table", "value"),
           prevent_initial_call=True,)
 def apply_to_db(n_clicks, selection, all_rows, table):
+    """
+    Funct: Button: Apply to DB
+    TODO: Keep recs in UI if upload to DB fails ! IMPORTANT !
+    """
     # seperate selected rows
     sel_rows = pd.DataFrame()
     updated_rows = pd.DataFrame()
@@ -245,19 +259,25 @@ def apply_to_db(n_clicks, selection, all_rows, table):
         else:
             sel_rows = pd.concat(
                 [sel_rows, pd.DataFrame([all_rows[i]])], ignore_index=True)
-    # insert selected into DB
+    
+    # try to insert via pool
     try:
         insert_into_db(
-            conn=db_conn,
             table=table,
             recommendations=sel_rows
         )
     # this exception is only raised when the entered table cannot be found (see insert_into_db from tip_generator.db_operation)
     except Exception as e:
         # TODO keep selection after exception
+        print(f"Error while uploading to the database: {e}")
         return all_rows, selection, ["Table not found!"]
 
+
     return updated_rows.to_dict("records"), [], ["Successfully inserted data!"]
+
+
+
+# Open previously generated table for debugging
 
 
 @callback(Output(component_id='table_div', component_property='children', allow_duplicate=True),
@@ -281,9 +301,61 @@ def open_debug_table(n_clicks):
     )
     return table
 
+# ###########################################################################################################
+    # Similarities View
+# ###########################################################################################################
+
+# ###########################################################################################################
+    # Database View
+# ###########################################################################################################
+
+@callback(Output("test-db-connection-result", "children"),
+          Input("db-connect-button", "n_clicks"),
+          State("db-input-user", "value"),
+          State("db-input-password", "value"),
+          State("db-input-host", "value"),
+          State("db-input-port", "value"),
+          State("db-input-database", "value"),
+          State("db-input-table", "value"),
+          prevent_initial_call=True)
+def test_db_conn_button(n_clicks, user, password, host, port, database, table):
+    """
+    Funct: Button: Test DB-Connection
+    """
+    db_login = {
+        "user": user,
+        "password": password,
+        "host": host,
+        "port": int(port) if not port == "" else 0,
+        "database": database,
+        "table": table
+    }
+    global db_conn
+    db_conn = connect_to_db(db_login)
+
+@callback(Output("test-pool-connection-result", "children"),
+          Input("pool-connect-button", "n_clicks"),
+          prevent_initial_call=True)
+def test_pool_conn_button(n_clicks):
+    """
+    Funct: Button: Test Pool-Connection
+    """
+    session = SessionLocal()
+    try:
+        result = session.execute(text("SELECT COUNT(*) FROM recommendation")).fetchone()
+        return f"Pool connection successful: {result}"
+    except Exception as e:
+        return f"Pool connection failed: {e}"
+    finally:
+        session.close()
+
+
+# Run the app
 
 def start_gui():
     app.run(debug=True)
+
+
 '''# Run the app
 if __name__ == '__main__':
     app.run(debug=True)'''

@@ -1,15 +1,21 @@
 import mariadb
 from mariadb import Connection
+from sqlalchemy import text, insert
+from sqlalchemy.orm import Session
+
 import sys
 import pandas as pd
 from pathlib import Path
 import typer
 from typing import Optional
 from loguru import logger
+import traceback
 
 # for similarity search with sentence embedding:
 from sentence_transformers import SentenceTransformer
 from sklearn.cluster import AgglomerativeClustering
+import hdbscan
+
 from scipy.cluster.hierarchy import dendrogram, linkage
 import matplotlib.pyplot as plt
 import numpy as np
@@ -18,7 +24,63 @@ from collections import Counter
 
 # initialize typer and loguru
 app = typer.Typer()
-logger.add(sys.stderr, level="INFO")
+logger.remove()
+logger.add(sys.stdout, level="INFO")
+
+
+from sqlalchemy import Column, Integer, String, Text
+from sqlalchemy.dialects.mysql import SET, ENUM, TINYINT, YEAR
+from sqlalchemy.ext.declarative import declarative_base
+
+Base = declarative_base()
+
+class Recommendation(Base):
+    """
+    SQLAlchemy model for the recommendation table.
+    """
+    __tablename__ = "recommendation"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    short_desc = Column(String(128), nullable=True)  # VARCHAR(128)
+    long_desc = Column(String(500), nullable=True)  # VARCHAR(500)
+    
+    goal = Column(ENUM('augment', 'prevent', 'recover', 'maintain'), nullable=True)  # ENUM
+    
+    activity_type = Column(ENUM('time management', 'exercise', 'cognitive', 'relax', 'social'), nullable=True)  # ENUM
+    
+    categories = Column(SET(
+        'work', 'success', 'productivity', 'performance', 'focus', 'time management', 
+        'happiness', 'mental', 'active reflection', 'awareness', 'well-being', 'health', 'fitness', 'social'
+    ), nullable=True)  # SET
+    
+    concerns = Column(SET(
+        'goal-setting', 'self-motivation', 'self-direction', 'self-discipline', 'focus', 
+        'mindset', 'time management', 'procrastination', 'stress management', 'mental-health', 
+        'work-life balance', 'sleep quality'
+    ), nullable=True)  # SET
+    
+    daytime = Column(ENUM('any', 'morning', 'noon', 'evening', 'end of day'), nullable=True)  # ENUM
+    
+    weekdays = Column(ENUM('any', 'workdays', 'weekend', 'week start', 'end of workweek', 'public holiday'), nullable=True)  # ENUM
+    
+    season = Column(ENUM('any', 'spring', 'summer', 'autumn', 'winter', 'holiday season', 'summer vacation'), nullable=True)  # ENUM
+    
+    is_outdoor = Column(TINYINT(1), nullable=True)  # TINYINT (Boolean)
+    is_basic = Column(TINYINT(1), nullable=True)  # TINYINT (Boolean)
+    is_advanced = Column(TINYINT(1), nullable=True)  # TINYINT (Boolean)
+
+    gender = Column(String(50), nullable=True)  # VARCHAR(50)
+    src_title = Column(String(128), nullable=True)  # VARCHAR(128)
+    src_reference = Column(Text, nullable=True)  # TEXT
+    src_pub_year = Column(YEAR, nullable=True)  # YEAR
+    src_pub_type = Column(String(50), nullable=True)  # VARCHAR(50)
+    src_field_of_study = Column(String(64), nullable=True)  # VARCHAR(64)
+    src_doi = Column(String(255), nullable=True)  # VARCHAR(255)
+    src_hyperlink = Column(String(255), nullable=True)  # VARCHAR(255)
+    src_pub_venue = Column(String(255), nullable=True)  # VARCHAR(255)
+    src_citations = Column(Integer, nullable=True)  # INT
+    src_cit_influential = Column(Integer, nullable=True)  # INT
+
 
 # Connect to MariaDB
 def connect_to_db(
@@ -40,8 +102,7 @@ def connect_to_db(
 
 
 def insert_into_db(
-        conn: Connection,
-        table: str,
+        table : str,
         recommendations: pd.DataFrame
 ):
     """
@@ -49,29 +110,29 @@ def insert_into_db(
     """
     # build insertion statement
     table = table
-    columns_str = ", ".join(recommendations.columns)  # columns as Str
-    # value_subt = ["%s" for _ in range(len(recommendations.columns))] or :
-    value_subt = ", ".join(["%s"] * len(recommendations.columns)) # %s : SQL placeholder for values in statement
-    stmt = f"INSERT INTO {table} ({columns_str}) VALUES ({value_subt})"
-    recommendations.astype(str)
-    # insert recommendations row by row
+    rows = recommendations.to_dict(orient="records")
     try:
-        cursor = conn.cursor()
-        for _, row in recommendations.iterrows():  # _ is index
-            cursor.execute(stmt, tuple(row))
-        conn.commit()
+        from app import SessionLocal
+    except ImportError:
+        logger.error("SessionLocal not found!")
+        return None
+    # bulk insert recommendations
+    try:
+        session : Session = SessionLocal()
+        session.execute(insert(Recommendation), rows)
+        session.commit()
         logger.info("Successfully uploaded to the database.")
     except mariadb.Error as e:
         if e.errno == 1146:
             raise Exception("Table does not exist!")
         else:
             logger.error(f"Error while uploading to the database: {e}")
+            logger.error(traceback.format_exc())
     finally:
-        cursor.close()
+        session.close()
         logger.debug("Closed cursor after insert operation.")
 
-
-# Delete recommendations by their ID TODO?
+# Delete recommendations by their ID? TODO
 
 
 # Find similar recommendations via sentence embeddings
@@ -84,18 +145,55 @@ def find_similarities(
 
     cursor = conn.cursor()
     cursor.execute(f"SELECT id, short_desc FROM {table}")
-    tips = cursor.fetchall()
+    table = cursor.fetchall() #comes as list of tuples(=rows)
+    tabledf = pd.DataFrame(table)
+    embeddings = model.encode(tabledf[1].to_list()) # extract tips scince id is not supposed to be embedded
 
-    embeddings = model.encode(tips)
+
+    print()
+    print(tabledf)
+    print()
 
     # Perform Agglomerative Clustering
     agg_clustering = AgglomerativeClustering(
         n_clusters=None, distance_threshold=th, linkage='ward')
-    clusters = agg_clustering.fit_predict(embeddings)
+    
+    agg_table = pd.DataFrame(tabledf)
+    print("AGGTABLE")
+    print(agg_table)
+    print()
 
-    tips["cluster"] = clusters
 
-    print(tips)
+    print("TABLEDF")
+    print(tabledf)
+    print()
+    print("#####################################################################")
+    agg_table[2] = agg_clustering.fit_predict(embeddings)
+
+    print("AGGTABLE")
+    print(agg_table)
+    print()
+
+
+    print("TABLEDF")
+    print(tabledf)
+    print()
+    agg_table.columns = ["id", "tip", "cluster"]
+    #grouped_df = tabledf.sort_values(by='cluster').reset_index(drop=True)
+
+    # Perform HDBSCAN CLUSTERING
+    hdb_clustering = hdbscan.HDBSCAN(min_cluster_size=2, min_samples=1)
+    hdb_clustering.fit(embeddings)
+    hdb_table = pd.DataFrame(tabledf)
+    hdb_table[2] = hdb_clustering.labels_
+
+    print("HDBTABLE")
+    print(hdb_table)
+    print()
+
+    hdb_table.columns = ["id", "tip", "cluster"]
+
+    return agg_table.sort_values(by='cluster').reset_index(drop=True), hdb_table.sort_values(by='cluster').reset_index(drop=True)
 
 @app.command()
 def find_similarities_command(
@@ -110,11 +208,6 @@ def find_similarities_command(
     port = 3306
     database = "copy_fellmann"
     table = "recommendation"
-
-
-    model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
-
-
     try:
         connection = mariadb.connect(
             user=user,
@@ -123,71 +216,24 @@ def find_similarities_command(
             port=port,
             database=database
         )
-        print("Connection successful!")
+        logger.info("Connection successful!")
     except mariadb.Error as e:
         print(f"Error connecting to MariaDB: {e}")
         sys.exit(1)
 
-    cursor = connection.cursor()
-    cursor.execute(f"SELECT id, short_desc FROM {table}")
-    tips = cursor.fetchall()
+    agg_clusters, hdb_clusters = find_similarities(connection,table, threshold)
 
-    # Create DataFrame with 'Tip' and '#' (index) columns
-    tips_df = pd.DataFrame(tips, columns=["id", "short_desc"])
+    print("AGGLOMERATIVE CLUSTERING")
+    print("######################################################################")
+    print(agg_clusters)
+    print("######################################################################")
+    print()
+    print("HDBSCAN")
+    print("######################################################################")
+    print(hdb_clusters)
+    print("######################################################################")
 
-    recommendations = tips_df["short_desc"].tolist()
 
-    embeddings = model.encode(recommendations)
-
-    # Perform Agglomerative Clustering
-    agg_clustering = AgglomerativeClustering(
-        n_clusters=None, distance_threshold=threshold, linkage='ward')
-    labels = agg_clustering.fit_predict(embeddings)
-
-    # Create a DataFrame to hold the cluster labels and their corresponding indices
-    tips_df['Cluster'] = labels
-
-    # Group by cluster and get the indices of tips in each cluster
-    clustered_tips = tips_df.groupby(
-        'Cluster')['id'].apply(list).reset_index()
-
-    # Display the clusters with their corresponding IDs
-    print(clustered_tips)
-    print("_------------------------------------------")
-    # Count the number of elements in each cluster
-    cluster_counts = Counter(labels)
-
-    # Find clusters with more than one element
-    valid_clusters = [cluster for cluster,
-                      count in cluster_counts.items() if count > 1]
-
-    # Filter embeddings and labels to include only the valid clusters
-    filtered_embeddings = []
-    filtered_labels = []
-    filtered_ids = []
-
-    for i, label in enumerate(labels):
-        if label in valid_clusters:
-            filtered_embeddings.append(embeddings[i])
-            filtered_labels.append(label)
-            filtered_ids.append(tips_df.iloc[i]['ID'])
-
-    filtered_embeddings = np.array(filtered_embeddings)
-    filtered_labels = np.array(filtered_labels)
-    filtered_ids = np.array(filtered_ids)
-
-    # Display clusters with IDs
-    for i in np.unique(filtered_labels):
-        print(f"\nCluster {i}:")
-        for idx, label in enumerate(filtered_labels):
-            if label == i:
-                print(
-                    f" - ID: {filtered_ids[idx]}, Tip: {recommendations[idx]}")
-
-    cursor.close()
-    connection.close()
-
-    return True
 
 @app.command()
 def insert_data_from_csv(csv_file_path: str = typer.Argument(..., help="Path to csv file")):
@@ -207,7 +253,7 @@ def insert_data_from_csv(csv_file_path: str = typer.Argument(..., help="Path to 
     cursor.close()
     connection.close()
 
-    print("Data inserted successfully!")
+    logger.info("Data inserted successfully!")
 
 
 # run typer app
