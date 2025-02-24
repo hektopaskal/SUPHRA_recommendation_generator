@@ -2,10 +2,16 @@ import mariadb
 from mariadb import Connection
 from sqlalchemy import text, insert
 from sqlalchemy.orm import Session
+from sqlalchemy.types import TypeDecorator, String
+from sqlalchemy import Column, Integer, String, Text
+from sqlalchemy.dialects.mysql import SET, ENUM, TINYINT, YEAR
+from sqlalchemy.ext.declarative import declarative_base
 
 import sys
 import pandas as pd
 from pathlib import Path
+import json
+
 import typer
 from typing import Optional
 from loguru import logger
@@ -21,16 +27,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 from collections import Counter
 
+from litellm import embedding
 
 # initialize typer and loguru
 app = typer.Typer()
 logger.remove()
 logger.add(sys.stdout, level="INFO")
 
-
-from sqlalchemy import Column, Integer, String, Text
-from sqlalchemy.dialects.mysql import SET, ENUM, TINYINT, YEAR
-from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
@@ -81,6 +84,15 @@ class Recommendation(Base):
     src_citations = Column(Integer, nullable=True)  # INT
     src_cit_influential = Column(Integer, nullable=True)  # INT
 
+class Embedding(Base):
+    """
+    SQLAlchemy model for the embeddings table.
+    """
+    __tablename__ = "embedding"
+
+    id = Column(Integer, primary_key=True)
+    embedding = Column(Text)  # VECTOR(1536)
+
 
 # Connect to MariaDB
 def connect_to_db(
@@ -116,10 +128,30 @@ def insert_into_db(
     except ImportError:
         logger.error("SessionLocal not found!")
         return None
-    # bulk insert recommendations
-    try:
+    # Try to insert recommendations and there corresponding embeddings
+    try: # TODO seperate into more try-except blocks
+        # Create session
         session : Session = SessionLocal()
+        # Bulk insert recommendations
         session.execute(insert(Recommendation), rows)
+        # Query id and short_desc of inserted recommendations
+        result = session.execute(text("SELECT id, short_desc FROM recommendation WHERE id >= LAST_INSERT_ID()"))
+        result = result.fetchall()
+        result = [tuple(row) for row in result]
+        short_descs = [row[1] for row in result]
+        # Extract embeddings
+        emb = embedding(model='text-embedding-ada-002', input=short_descs)
+        emb = [e["embedding"] for e in emb["data"]]
+        # Prepare the embedding data for sqlalchemy bulk insertion
+        embeddings_data = [
+            {"id": int(row[0]), "embedding": json.dumps(emb[i])} for i, row in enumerate(result)
+        ]
+        # Build the insert statement
+        stmt = insert(Embedding).values(
+            id=text(":id"),
+            embedding=text("Vec_FromText(:embedding)")
+        )
+        session.execute(stmt, embeddings_data)
         session.commit()
         logger.info("Successfully uploaded to the database.")
     except mariadb.Error as e:
@@ -127,7 +159,6 @@ def insert_into_db(
             raise Exception("Table does not exist!")
         else:
             logger.error(f"Error while uploading to the database: {e}")
-            logger.error(traceback.format_exc())
     finally:
         session.close()
         logger.debug("Closed cursor after insert operation.")

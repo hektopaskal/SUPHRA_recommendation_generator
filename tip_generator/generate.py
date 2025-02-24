@@ -1,10 +1,12 @@
 from litellm import completion
 from litellm.exceptions import APIError
+
 from pathlib import Path
 from dotenv import load_dotenv
 import sys
-from loguru import logger
 import json
+
+from loguru import logger
 
 load_dotenv()
 logger.remove()
