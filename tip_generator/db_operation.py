@@ -91,7 +91,7 @@ class Embedding(Base):
     __tablename__ = "embedding"
 
     id = Column(Integer, primary_key=True)
-    embedding = Column(Text)  # VECTOR(1536)
+    emb = Column(Text)  # VECTOR(1536)
 
 
 # Connect to MariaDB
@@ -114,14 +114,12 @@ def connect_to_db(
 
 
 def insert_into_db(
-        table : str,
         recommendations: pd.DataFrame
 ):
     """
     Inserts recommendations that are stored in pandas DataFrame with already matching column names!
     """
     # build insertion statement
-    table = table
     rows = recommendations.to_dict(orient="records")
     try:
         from app import SessionLocal
@@ -145,12 +143,12 @@ def insert_into_db(
         logger.debug("Successfully extracted embeddings.")
         # Prepare the embeddings for sqlalchemy bulk insertion
         embeddings_data = [
-            {"id": int(row[0]), "embedding": json.dumps(emb[i])} for i, row in enumerate(result)
+            {"id": int(row[0]), "emb": json.dumps(emb[i])} for i, row in enumerate(result)
         ]
         # Build and execute the insert statement
         stmt = insert(Embedding).values(
             id=text(":id"),
-            embedding=text("Vec_FromText(:embedding)")
+            emb=text("Vec_FromText(:emb)")
         )
         session.execute(stmt, embeddings_data)
         logger.debug("Successfully inserted embeddings into the database.")
@@ -162,7 +160,7 @@ def insert_into_db(
         if e.errno == 1146:
             raise Exception("Table does not exist!")
         else:
-            logger.error(f"Error while uploading to the database: {e}")
+            raise Exception(f"DB-Operation: Error while inserting data: {e}")
     finally:
         session.close()
         logger.debug("Closed cursor after insert operation.")

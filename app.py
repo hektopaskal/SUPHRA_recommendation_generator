@@ -1,10 +1,14 @@
 import os
 import base64
+import traceback
 from pathlib import Path
 from typing import Optional
 
+import sys
+from loguru import logger
+
 from mariadb import Connection
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, text, bindparam
 from sqlalchemy.orm import sessionmaker
 
 from dash import Dash, html, dash_table, dcc, callback, Output, Input, State, dash_table
@@ -19,6 +23,9 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 # Initialize the app
 app = Dash(__name__, external_stylesheets=external_stylesheets,
            suppress_callback_exceptions=True)
+# Initialize logger
+logger.remove()
+logger.add(sys.stdout, level="INFO")
 
 # Create DB connection pool
 # URL that points to the database ...//username:password@host:port/database
@@ -93,7 +100,21 @@ app.layout = [
             # SIMILARITIES VIEW
             dcc.Tab(label="Find Similarities", id="sim_view", children=[
                 html.H3("Find Similar Recommendations"),
+                # Div: browser table will be inserted here
+                html.Div(id="browsing-div", children=[
+                    # Button: Browse Database
+                    html.Button('Browse Database', id='browse-database-button', n_clicks=0, style={
+                        "margin": "10px"
+                    }),
+                ]),
+                # Div: sim table will be inserted here
+                html.Div(id="sim-table-div", children=[]),
+                # DEBUG ONLY: Find Similarities
+                html.Button('DEBUG ONLY: search similarities', id='similarity-search-button', n_clicks=0, style={
+                    "margin": "10px"
+                }),
             ]),
+
             # ###########################################################################################################
             # DATABASE VIEW
             dcc.Tab(label="Connect to DB", children=[
@@ -150,21 +171,13 @@ app.layout = [
                     html.Div(id="test-db-connection-result",
                              children=[], style={"margin-left": "20px"})
                 ], style={'width': '45%', 'display': 'inline-block', 'verticalAlign': 'top'}),
-                html.Div([
-                    html.H4("List 2"),
-                    html.Ul([
-                            html.Li("Item A"),
-                            html.Li("Item B"),
-                            html.Li("Item C")
-                            ]),
-                    # Test Connect Button
-                    html.Button("Test", id="pool-connect-button",
-                                n_clicks=0, style={"margin-left": "20px", "margin-top": "10px"}),
-                    # Display test_pool_connection() result
-                    html.Div(id="test-pool-connection-result",
-                             children=[], style={"margin-left": "20px"})
-                ], style={'width': '45%', 'display': 'inline-block', 'verticalAlign': 'top'}),
-            ]),
+                # Test Connect Button
+                html.Button("Test", id="pool-connect-button",
+                            n_clicks=0, style={"margin-left": "20px", "margin-top": "10px"}),
+                # Display test_pool_connection() result
+                html.Div(id="test-pool-connection-result",
+                         children=[], style={"margin-left": "20px"})
+            ], style={'width': '45%', 'display': 'inline-block', 'verticalAlign': 'top'}),
         ]
     ),
 ]
@@ -259,22 +272,20 @@ def apply_to_db(n_clicks, selection, all_rows, table):
         else:
             sel_rows = pd.concat(
                 [sel_rows, pd.DataFrame([all_rows[i]])], ignore_index=True)
-    
+
     # try to insert via pool
     try:
         insert_into_db(
-            table=table,
             recommendations=sel_rows
         )
     # this exception is only raised when the entered table cannot be found (see insert_into_db from tip_generator.db_operation)
     except Exception as e:
         # TODO keep selection after exception
-        print(f"Error while uploading to the database: {e}")
+        print(f"App: Error while uploading to the database: {e}")
+        print(traceback.format_exc())
         return all_rows, selection, ["Table not found!"]
 
-
     return updated_rows.to_dict("records"), [], ["Successfully inserted data!"]
-
 
 
 # Open previously generated table for debugging
@@ -305,44 +316,116 @@ def open_debug_table(n_clicks):
     # Similarities View
 # ###########################################################################################################
 
+
+@callback(Output("browsing-div", "children"),
+          Input("browse-database-button", "n_clicks"),
+          prevent_initial_call=True)
+def browse_database(n_clicks):
+    """
+    Funct: Button: Browse Database
+    """
+    session = SessionLocal()
+    try:
+        result = session.execute(
+            text("SELECT * FROM recommendation")).fetchall()
+        df = pd.DataFrame(result)
+        table = dash_table.DataTable(
+            id='browsing-table',
+            data=df.to_dict("records"),
+            columns=[{'id': i, 'name': i} for i in df.columns],
+            style_table={'overflowX': 'auto'},  # enables horizontal scrolling
+            style_cell={'textAlign': 'left'},
+            editable=True,
+            sort_action="native",
+            sort_mode="multi",
+            row_selectable="multi",
+            row_deletable=True,
+            selected_rows=[],
+            page_action="native",
+            page_current=0,
+            page_size=10,
+        )
+        return table
+    except Exception as e:
+        return f"Error while browsing database: {e}"
+    finally:
+        session.close()
+
+
+@callback(
+    Output("sim-table-div", "children"),
+    Input("similarity-search-button", "n_clicks"),
+    State("browsing-table", "derived_virtual_data"),
+    State("browsing-table", "derived_virtual_selected_rows"),
+    prevent_initial_call=True
+)
+def search_similarities(n_clicks, rows, selection):
+    """
+    Funct: Button: Search Similarities
+    """
+    if not selection:
+        return html.Div("No rows selected.")
+    else:
+        # get actual rows as DataFrame (considering sorting and filtering)
+        data = pd.DataFrame(rows)
+        # get indices (or more likely ids) of selected rows (considering sorting and filtering)
+        selected_df = data.iloc[selection]
+        # db-id of selected row (corresponds to vector id)
+        v_id = selected_df["id"].tolist()[0] 
+        print("Selected rows: ", str(selected_df["id"].tolist()[0]))
+        
+        try:
+            session = SessionLocal()
+            # get 3 most similar recommendations from database (euclidean distance)
+            result = session.execute(text("SELECT id FROM embedding ORDER BY VEC_DISTANCE_EUCLIDEAN(emb, (SELECT emb FROM embedding WHERE id = :v_id)) LIMIT 3;"), [{"v_id": str(v_id)}])
+            # get result as list
+            result = [r[0] for r in result.fetchall()]
+            # get recommendations from db
+            stmt = text("SELECT * FROM recommendation WHERE id IN :ids").bindparams(bindparam("ids", expanding=True))
+
+            result = session.execute(stmt, {"ids": result}).fetchall()
+            df = pd.DataFrame(result)
+            table = dash_table.DataTable(
+                id='sim-table',
+                data=df.to_dict("records"),
+                columns=[{'id': i, 'name': i} for i in df.columns],
+                style_table={'overflowX': 'auto'},  # enables horizontal scrolling
+                style_cell={'textAlign': 'left'},
+                editable=True,
+                sort_action="native",
+                sort_mode="multi",
+                row_selectable="multi",
+                row_deletable=True,
+                selected_rows=[],
+                page_action="native",
+                page_current=0,
+                page_size=10,
+            )
+            return table
+        except Exception as e:
+            #print(traceback.format_exc())
+            logger.error("Error while searching similarities: ", e)
+            return html.Div("Error while searching similarities.", e)
+        finally:
+            session.close()
+
+
+
 # ###########################################################################################################
     # Database View
 # ###########################################################################################################
 
-@callback(Output("test-db-connection-result", "children"),
-          Input("db-connect-button", "n_clicks"),
-          State("db-input-user", "value"),
-          State("db-input-password", "value"),
-          State("db-input-host", "value"),
-          State("db-input-port", "value"),
-          State("db-input-database", "value"),
-          State("db-input-table", "value"),
-          prevent_initial_call=True)
-def test_db_conn_button(n_clicks, user, password, host, port, database, table):
-    """
-    Funct: Button: Test DB-Connection
-    """
-    db_login = {
-        "user": user,
-        "password": password,
-        "host": host,
-        "port": int(port) if not port == "" else 0,
-        "database": database,
-        "table": table
-    }
-    global db_conn
-    db_conn = connect_to_db(db_login)
-
-@callback(Output("test-pool-connection-result", "children"),
+@callback(Output("db_connect-button", "children"),
           Input("pool-connect-button", "n_clicks"),
           prevent_initial_call=True)
-def test_pool_conn_button(n_clicks):
+def test_db_connection(n_clicks):
     """
     Funct: Button: Test Pool-Connection
     """
     session = SessionLocal()
     try:
-        result = session.execute(text("SELECT COUNT(*) FROM recommendation")).fetchone()
+        result = session.execute(
+            text("SELECT COUNT(*) FROM recommendation")).fetchone()
         return f"Pool connection successful: {result}"
     except Exception as e:
         return f"Pool connection failed: {e}"
