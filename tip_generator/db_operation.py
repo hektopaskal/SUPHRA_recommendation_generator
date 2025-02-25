@@ -134,26 +134,30 @@ def insert_into_db(
         session : Session = SessionLocal()
         # Bulk insert recommendations
         session.execute(insert(Recommendation), rows)
-        # Query id and short_desc of inserted recommendations
+        logger.debug("Successfully inserted recommendations into the database.")
+        # Query 'id' and 'short_desc' of inserted recommendations
         result = session.execute(text("SELECT id, short_desc FROM recommendation WHERE id >= LAST_INSERT_ID()"))
-        result = result.fetchall()
-        result = [tuple(row) for row in result]
+        result = [tuple(row) for row in result.fetchall()]
         short_descs = [row[1] for row in result]
         # Extract embeddings
         emb = embedding(model='text-embedding-ada-002', input=short_descs)
-        emb = [e["embedding"] for e in emb["data"]]
-        # Prepare the embedding data for sqlalchemy bulk insertion
+        emb = [e["embedding"] for e in emb["data"]] # cut off metadata from response
+        logger.debug("Successfully extracted embeddings.")
+        # Prepare the embeddings for sqlalchemy bulk insertion
         embeddings_data = [
             {"id": int(row[0]), "embedding": json.dumps(emb[i])} for i, row in enumerate(result)
         ]
-        # Build the insert statement
+        # Build and execute the insert statement
         stmt = insert(Embedding).values(
             id=text(":id"),
             embedding=text("Vec_FromText(:embedding)")
         )
         session.execute(stmt, embeddings_data)
+        logger.debug("Successfully inserted embeddings into the database.")
         session.commit()
-        logger.info("Successfully uploaded to the database.")
+        logger.debug("Committed the transaction.")
+        logger.info("Upload completed.")
+        # Return List of ids of inserted recommendations
     except mariadb.Error as e:
         if e.errno == 1146:
             raise Exception("Table does not exist!")
