@@ -13,12 +13,13 @@ dependencies:
   - matplotlib
   - scikit-learn
   - scipy
-  - mariadb
   - dash
   - plotly
   - loguru
   - hdbscan
+  - sqlalchemy
   - pip:
+    - mariadb>=1.1.12
     - getpaper
     - just-agents
     - sentence-transformers
