@@ -3,6 +3,10 @@ channels:
   - conda-forge
 dependencies:
   - python=3.11.10
+  - mariadb-connector-c
+  - gcc_linux-64  # Needed for compiling C extensions
+  - gxx_linux-64  # C++ Compiler
+  - make  # Needed for compilation
   - pathlib
   - pandas
   - litellm

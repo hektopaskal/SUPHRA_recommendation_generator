@@ -436,7 +436,8 @@ def test_db_connection(n_clicks):
 # Run the app
 
 def start_gui():
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=8050, debug=True)
+
 
 
 '''# Run the app
