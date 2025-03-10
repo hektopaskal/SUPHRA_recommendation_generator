@@ -31,17 +31,23 @@ logger.add(sys.stdout, level="INFO")
 # URL that points to the database ...//username:password@host:port/database
 DATABASE_URL = "mariadb+mariadbconnector://root:rootpw@localhost:3306/copy_fellmann"
 # Engine for connection pool
-engine = create_engine(
-    DATABASE_URL,
-    pool_size=5,
-    max_overflow=2,
-    pool_timeout=30,
-    pool_recycle=1800,
-    pool_pre_ping=True,
-    echo=False
-)
-# SessionLocal hands out a session from the pool when needed
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+try:
+    engine = create_engine(
+        DATABASE_URL,
+        pool_size=5,
+        max_overflow=2,
+        pool_timeout=30,
+        pool_recycle=1800,
+        pool_pre_ping=True,
+        echo=False
+    )
+    # SessionLocal hands out a session from the pool when needed
+    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    logger.info("Database connection pool initialized successfully")
+except Exception as e:
+    logger.error(f"Failed to initialize database connection pool: {e}")
+    engine = None
+    SessionLocal = None
 
 
 # App layout
@@ -260,6 +266,10 @@ def apply_to_db(n_clicks, selection, all_rows, table):
     Funct: Button: Apply to DB
     TODO: Keep recs in UI if upload to DB fails ! IMPORTANT !
     """
+    # Check if database connection is available
+    if SessionLocal is None:
+        return all_rows, selection, ["Database connection not available!"]
+        
     # seperate selected rows
     sel_rows = pd.DataFrame()
     updated_rows = pd.DataFrame()
@@ -281,8 +291,8 @@ def apply_to_db(n_clicks, selection, all_rows, table):
     # this exception is only raised when the entered table cannot be found (see insert_into_db from tip_generator.db_operation)
     except Exception as e:
         # TODO keep selection after exception
-        print(f"App: Error while uploading to the database: {e}")
-        print(traceback.format_exc())
+        logger.error(f"Error while uploading to the database: {e}")
+        logger.error(traceback.format_exc())
         return all_rows, selection, ["Table not found!"]
 
     return updated_rows.to_dict("records"), [], ["Successfully inserted data!"]
@@ -324,6 +334,9 @@ def browse_database(n_clicks):
     """
     Funct: Button: Browse Database
     """
+    if SessionLocal is None:
+        return html.Div("Database connection not available!")
+        
     session = SessionLocal()
     try:
         result = session.execute(
@@ -363,6 +376,9 @@ def search_similarities(n_clicks, rows, selection):
     """
     Funct: Button: Search Similarities
     """
+    if SessionLocal is None:
+        return html.Div("Database connection not available!")
+        
     if not selection:
         return html.Div("No rows selected.")
     else:
@@ -372,7 +388,7 @@ def search_similarities(n_clicks, rows, selection):
         selected_df = data.iloc[selection]
         # db-id of selected row (corresponds to vector id)
         v_id = selected_df["id"].tolist()[0] 
-        print("Selected rows: ", str(selected_df["id"].tolist()[0]))
+        logger.info(f"Selected rows: {selected_df['id'].tolist()[0]}")
         
         try:
             session = SessionLocal()
@@ -404,7 +420,7 @@ def search_similarities(n_clicks, rows, selection):
             return table
         except Exception as e:
             #print(traceback.format_exc())
-            logger.error("Error while searching similarities: ", e)
+            logger.error(f"Error while searching similarities: {e}")
             return html.Div("Error while searching similarities.", e)
         finally:
             session.close()
@@ -415,13 +431,16 @@ def search_similarities(n_clicks, rows, selection):
     # Database View
 # ###########################################################################################################
 
-@callback(Output("db_connect-button", "children"),
+@callback(Output("test-pool-connection-result", "children"),
           Input("pool-connect-button", "n_clicks"),
           prevent_initial_call=True)
 def test_db_connection(n_clicks):
     """
     Funct: Button: Test Pool-Connection
     """
+    if SessionLocal is None:
+        return "Database connection not available!"
+        
     session = SessionLocal()
     try:
         result = session.execute(
@@ -434,12 +453,30 @@ def test_db_connection(n_clicks):
 
 
 # Run the app
-
 def start_gui():
-    app.run(host="0.0.0.0", port=8050, debug=True)
+    logger.info("Starting GUI")
+    try:
+        # Get host from environment or use default - FORCE 0.0.0.0 for Docker
+        host = "0.0.0.0"  # Always use 0.0.0.0 in Docker
+        logger.info(f"Using host: {host}")
+        
+        
+        # Run server with absolute minimum configuration
+        app.run_server(
+            host=host,
+            port=8050,
+            debug=False,
+            use_reloader=False
+        )
+    except Exception as e:
+        logger.error(f"Error starting server: {e}")
+        logger.error(traceback.format_exc())
 
-
-
-'''# Run the app
+# Remove the threading and test code - simplify main block
 if __name__ == '__main__':
-    app.run(debug=True)'''
+    try:
+        # Just call start_gui directly - no threading
+        start_gui()
+    except Exception as e:
+        logger.error(f"Error starting the application: {e}")
+        logger.error(traceback.format_exc())

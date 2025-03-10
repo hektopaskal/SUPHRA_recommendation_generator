@@ -1,4 +1,4 @@
-name: environment_tip_generator
+name: tip_generator
 channels:
   - conda-forge
 dependencies:
