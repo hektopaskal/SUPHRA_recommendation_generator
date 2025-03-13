@@ -20,7 +20,4 @@ def dict_to_df(recs : dict) -> pd.DataFrame:
         src = [",".join(recs["meta_data"][v]) if isinstance(recs["meta_data"][v], list) else recs["meta_data"][v] for v in recs["meta_data"]]
 
         output_df.loc[len(output_df)] = rec + src 
-
-    print_output = output_df["categories"]
-    print(f"dict_to_df: {print_output}")
     return output_df
