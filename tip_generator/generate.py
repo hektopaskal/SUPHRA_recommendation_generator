@@ -30,11 +30,11 @@ tools = [
                             "properties": {
                                 "short_desc": {
                                     "type": "string",
-                                    "description": "generate the concise tip that is based on the information provided in the input text; whenever it is possible give precise time indications; ensure that the tip is concrete and easy to execute for everyone who wants to improve their own productivity and health state; Ensure that the recommendation is not to vague!"
+                                    "description": "generate the concise tip that is based on the information provided in the input text; whenever it is possible give precise time indications; ensure that the tip is concrete and easy to execute for everyone who wants to improve their own productivity and wellbeing; Ensure that the recommendation is not to vague! Tip length: 50 to 200 characters!"
                                 },
                                 "long_desc": {
                                     "type": "string",
-                                    "description": "introduce the user to the study briefly and assume that the user is not aware of the study. Therefore, use indefinite pronouns and say 'a study...' instead of 'the study...'; tell more about the study and how the scientists attained this findings; mention the scientists/authors of the input text and embed this information within a continuous text of a maximum of 50 words; embed names and annual figures in continuous text"
+                                    "description": "introduce the user to the study briefly and assume that the user is not aware of the study. Therefore, use indefinite pronouns and say 'a study...' instead of 'the study...'; tell more about the study and how the scientists attained this findings; mention the scientists/authors of the input text and embed this information within a continuous text of a maximum of 500 characters; embed names and annual figures in continuous text"
                                 },
                                 "goal": {
                                     "type": "string",
@@ -42,28 +42,17 @@ tools = [
                                 },
                                 "activity_type": {
                                     "type": "string",
-                                    "description": "assign your advice to an activity type that describes the key characteristic of the activity to execute the tip. the following types are possible: Creative, Exercise, Cognitive, Relax, Social, Time Management"
+                                    "description": "assign your advice to an activity type that describes the key characteristic of the activity to execute the tip. the following and only the following values are possible in this field: Creative, Exercise, Cognitive, Relax, Social, Time Management, Nutrition"
                                 },
                                 "categories": {
                                     "type": "array",
                                     "items": {"type": "string"},
-                                    "description": "assign your advice to categories. the following categories are possible: work, success, productivity, performance, focus, time management, happiness, mental, active reflection, awareness, well-being, health, fitness, social"
+                                    "description": "assign your advice to categories. the following and only the following values are possible in this field: work, success, productivity, performance, focus, time management, happiness, mental, active reflection, awareness, well-being, health, fitness, social"
                                 },
                                 "concerns": {
                                     "type": "array",
                                     "items": {"type": "string"},
-                                    "description": """assign one concern for which the tip could be helpful. The following concerns are possible: 
-                                    goal-setting(Defining Goals and tracking progress toward them), self-motivation(finding internal motivation to work on tasks), 
-                                    self-direction(Taking initiative and making independent decisions to guide your work and priorities), 
-                                    self-discipline(maintaining consistent effort and control over impulses to achieve tasks and goals), 
-                                    focus(concentrating on tasks while minimizing distractions and interruptions), 
-                                    mindeset(Developing attitudes and beliefs that support resilience and growth), 
-                                    time management(organizing and allocating time effectively to complete tasks and meet deadlines),
-                                    procrastination(overcoming delays andavoidance in starting and completing tasks), 
-                                    stress management(coping with and reducing stess to maintain productivity and well-being)
-                                    mental-health(promoting emotional and psychological well-being to support overall performance)
-                                    work-life balance(balancing professional and personal responsibilities for a fulfilling lifestyle),
-                                    sleep quality(improving the quality and consistency of sleep to enhance energy and focus)"""
+                                    "description": "assign one or more concern for which the tip could be helpful. The following and only the following values are possible in this field: goal-setting, self-motivation, self-direction, self-discipline, focus, mindeset, time management, procrastination, stress management, mental-health, work-life balance, sleep quality"
                                 },
                                 "daytime": {
                                     "type": "string",
@@ -125,7 +114,7 @@ def generate_recommendations_from_file(input_text: str, modelname: str, instruct
                 {'role': 'user', 'content': f'Create recommendations based on the information of this summary: {input_text}'}
             ],
             tools=tools,
-            temperature=0.5
+            temperature=0.4
         )
     except KeyError as e:
         raise KeyError(f"Keyerror: {e}")
