@@ -4,11 +4,13 @@ from pathlib import Path
 from dotenv import load_dotenv
 import shutil
 
-from getpaper.parse import try_parse_paper, PDFParser
-from langchain_community.document_loaders import PDFMinerLoader
+#from getpaper.parse import try_parse_paper, PDFParser
+#from langchain_community.document_loaders import PDFMinerLoader
 
 from pdf2image import convert_from_path
-import pytesseract
+#import pytesseract
+
+from unstructured.partition.pdf import partition_pdf
 
 from semanticscholar import SemanticScholar
 
@@ -70,7 +72,7 @@ def is_empty(txt_file_path):
         logger.error(f"An error occured: {e}")
         return False
 
-# extract text using tesseract OCR
+'''# extract text using tesseract OCR
 def ocr_fallback(pdf_file_path: Path, txt_file_path: Path):
     ocr_text = ""
     pages = convert_from_path(pdf_file_path)  # pdf2image
@@ -79,7 +81,7 @@ def ocr_fallback(pdf_file_path: Path, txt_file_path: Path):
         ocr_text += pytesseract.image_to_string(page) + "\n"
     # Step 4: Save the extracted text to the output folder
     with open(txt_file_path, 'w', encoding='utf-8') as output_file:  # utf-16/32???
-        output_file.write(ocr_text)
+        output_file.write(ocr_text)'''
 
 # Takes a single PDF file and converts it into a txt file
 def convert_pdf(input_file: str, output_dir: str, num_pages: Optional[int] = None) -> str:
@@ -88,24 +90,29 @@ def convert_pdf(input_file: str, output_dir: str, num_pages: Optional[int] = Non
     Returns the path to the converted file.
     """
     input_path = Path(input_file)
-    output_path = output_dir
+    output_path = Path(output_dir / input_path.stem)
 
-    # Create the output folder if it doesn't exist
     output_path.mkdir(parents=True, exist_ok=True)
-
-    file_name = input_path.name
-    file_stem = input_path.stem  # Get the filename without extension
     
-    # Check if the output file already exists
-    output_txt_path = output_path / file_stem / f"{file_stem}.txt"
+    output_txt_path = output_path / f"{input_path.stem}.txt"
 
     if Path(output_txt_path).exists():
-        logger.info(f"Skipping {file_name}: Output file already exists.")
+        logger.info(f"Skipping {input_path.name}: Output file already exists.")
         return str(output_txt_path)
 
-    logger.info(f"Processing {input_file}...")
+    logger.info(f"Extract text from {input_file}...")
+    try:
+        pdf_elements = partition_pdf(input_path, strategy="auto")
+    except Exception as e:
+        logger.error(f"Error parsing {input_path.name}: {e}")
+        return None
 
-    # Step 1: Attempt to parse using getpaper module
+    with open(output_txt_path, "w", encoding="utf-8") as f:
+        for element in pdf_elements:
+            f.write(element.text + "\n")
+
+
+    '''# Step 1: Attempt to parse using getpaper module
     try:
         try_parse_paper(
             paper=Path(input_path),
@@ -124,14 +131,14 @@ def convert_pdf(input_file: str, output_dir: str, num_pages: Optional[int] = Non
 
     # Step 2: Check if the parsed text is empty or garbled
     if is_empty(output_txt_path):
-        logger.error(f"No text detected in {file_name}, falling back to OCR...")
+        logger.error(f"No text detected in {input_path.name}, falling back to OCR...")
         # Step 3: Use OCR as a fallback
-        ocr_fallback(input_file, output_txt_path)
+        ocr_fallback(input_file, output_txt_path)'''
 
     # move pdf file to its dedicated folder
-    shutil.move(input_file, output_path/file_stem/file_name)
+    shutil.move(input_file, output_path/input_path.name)
 
-    logger.info(f"Finished processing {file_name}.")
+    logger.info(f"Finished processing {input_path.name}.")
     return str(output_txt_path)
 
 @app.command()
@@ -166,44 +173,17 @@ def convert_pdfs(
     """
     input_dir = Path(input_dir)
     output_dir = Path(output_dir)
-
+    logger.info(f"Input directory: {input_dir}")
     # Create the output folder if it doesn't exist
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
+    logger.info("Created output directory.")
 
     # Iterate over all PDF files in the input folder
     for file_name in os.listdir(input_dir):
         if file_name.endswith(".pdf"):
-            pdf_file_path = os.path.join(input_dir, file_name)
-            output_txt_path = os.path.join(
-                output_dir, file_name.replace(".pdf", ""), file_name.replace(".pdf", ".txt"))
-
-            logger.info(f"Processing {pdf_file_path}...")
-
-            # Step 1: Attempt to parse using the getpaper module
-            parse_try = try_parse_paper(
-                paper=Path(pdf_file_path),
-                folder=Path(output_dir),
-                # You can choose different parsers: py_mu_pdf, unstructured, pdf_miner, etc.
-                parser=PDFParser.pdf_miner,
-                recreate_parent=False,  # Whether to recreate parent folders
-                cleaning=True,  # Whether to clean the PDF content
-                subfolder=False,
-                mode="single",  # Mode (specific to 'unstructured')
-                strategy="auto",  # Strategy (specific to 'unstructured')
-                pdf_infer_table_structure=True,  # If you want to infer table structure
-                include_page_breaks=False  # Include page breaks
-            )
-
-            # Step 2: Check if the parsed text is empty or garbled
-            if is_empty(output_txt_path):
-                logger.info(
-                    f"No text detacted in {file_name}, falling back to OCR...")
-                # Step 3: Use OCR as a fallback
-                ocr_fallback(pdf_file_path, output_txt_path)
-
-            logger.info(
-                f"Finished processing {file_name}. Saved to {output_txt_path}.\n")
+            convert_pdf(input_file=input_dir / file_name,
+                        output_dir=output_dir)
 
 # New subcommand to search for papers using Semanticscholar
 

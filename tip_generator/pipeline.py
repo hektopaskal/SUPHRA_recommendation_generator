@@ -148,27 +148,12 @@ def pdf_to_tips(
     input_path = Path(input_dir).resolve().absolute()
     output_path = Path(output_dir).resolve().absolute()
     
-    # prepare output
-    # TODO move each pdf file to its directory
-    output_path.mkdir(parents=True, exist_ok=True) 
-    
     merged_dfs = pd.DataFrame()
-
-    '''# look for API keys
-    for key in keys:
-        if keys[key] == "":
-            if not os.getenv(key): # check for key in environment variables
-                raise KeyError(f"{key} not found!")
-            else:
-                pass
-        else:
-            os.environ[key] = keys[key]'''
-    
-
+ 
     for pdf in input_path.glob('*.pdf'):
         # Convert PDF to text
+        logger.info("Start PDF conversion...")
         converted_pdf_path = convert_pdf(str(pdf), output_path)
-        logger.info("Conversion finished.")
         
         # Check if the converted file exists
         if not Path(converted_pdf_path).exists():

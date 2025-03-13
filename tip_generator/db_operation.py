@@ -88,7 +88,7 @@ class Embedding(Base):
     """
     SQLAlchemy model for the embeddings table.
     """
-    __tablename__ = "embedding"
+    __tablename__ = "emb_ada002"
 
     id = Column(Integer, primary_key=True)
     emb = Column(Text)  # VECTOR(1536)

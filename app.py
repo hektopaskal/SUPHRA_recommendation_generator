@@ -1,4 +1,5 @@
 import os
+import sys
 import base64
 import traceback
 from pathlib import Path
@@ -31,6 +32,7 @@ logger.add(sys.stdout, level="INFO")
 # URL that points to the database ...//username:password@host:port/database
 DATABASE_URL = "mariadb+mariadbconnector://root:rootpw@localhost:3306/copy_fellmann"
 # Engine for connection pool
+logger.info("Initializing database connection pool")
 try:
     engine = create_engine(
         DATABASE_URL,
@@ -43,7 +45,6 @@ try:
     )
     # SessionLocal hands out a session from the pool when needed
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-    logger.info("Database connection pool initialized successfully")
 except Exception as e:
     logger.error(f"Failed to initialize database connection pool: {e}")
     engine = None
@@ -221,8 +222,10 @@ def update_output_table(n_clicks, contents, filenames, claim, model):
             file_data = base64.b64decode(content_string)
 
             # Save the file to the output directory
-            output_path = os.path.join(Path(
-                "data/temp"), filename)
+            output_path = Path("data/temp")
+            # Create the output folder regarding the pdf file
+            output_path = output_path / filename
+            # output_path = os.path.join(Path("data/temp"), filename)
             with open(output_path, "wb") as f:
                 f.write(file_data)
 
@@ -393,7 +396,7 @@ def search_similarities(n_clicks, rows, selection):
         try:
             session = SessionLocal()
             # get 3 most similar recommendations from database (euclidean distance)
-            result = session.execute(text("SELECT id FROM embedding ORDER BY VEC_DISTANCE_EUCLIDEAN(emb, (SELECT emb FROM embedding WHERE id = :v_id)) LIMIT 3;"), [{"v_id": str(v_id)}])
+            result = session.execute(text("SELECT id FROM emb_ada002 ORDER BY VEC_DISTANCE_EUCLIDEAN(emb, (SELECT emb FROM emb_ada002 WHERE id = :v_id)) LIMIT 3;"), [{"v_id": str(v_id)}])
             # get result as list
             result = [r[0] for r in result.fetchall()]
             # get recommendations from db
