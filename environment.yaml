@@ -4,16 +4,14 @@ channels:
 dependencies:
   - python=3.11.10
   - mariadb-connector-c
-  #- gcc_linux-64  # Needed for compiling C extensions
-  #- gxx_linux-64  # C++ Compiler
+  - gcc_linux-64  # LINUX (Needed for compiling C extensions)
+  - gxx_linux-64  # LINUX (C++ Compiler)
   - make  # Needed for compilation
   - pathlib
   - pandas
   - litellm
   - python-dotenv
   - pip
-  - pdf2image
-  - pytesseract
   - matplotlib
   - scikit-learn
   - scipy
@@ -24,6 +22,6 @@ dependencies:
   - sqlalchemy
   - pip:
     - mariadb>=1.1.12
-    - getpaper
+    - unstructured[pdf]
     - just-agents
     - sentence-transformers
