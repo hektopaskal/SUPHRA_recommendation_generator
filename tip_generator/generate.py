@@ -30,7 +30,7 @@ tools = [
                             "properties": {
                                 "short_desc": {
                                     "type": "string",
-                                    "description": "generate the concise tip that is based on the information provided in the input text; whenever it is possible give precise time indications; ensure that the tip is concrete and easy to execute for everyone who wants to improve their own productivity and wellbeing; Ensure that the recommendation is not to vague! Tip length: 50 to 200 characters!"
+                                    "description": "write the concise tip that is based on the information provided in the input text; whenever it is possible give precise time indications; ensure that the tip is concrete and easy to execute for everyone who wants to improve their own productivity and wellbeing; Ensure that the recommendation is not to vague! Tip length: 50 to 200 characters!"
                                 },
                                 "long_desc": {
                                     "type": "string",
@@ -111,10 +111,14 @@ def generate_recommendations_from_file(input_text: str, modelname: str, instruct
             model=modelname,
             messages=[
                 {'role': 'system', 'content': instruction_text},
-                {'role': 'user', 'content': f'Create recommendations based on the information of this summary: {input_text}'}
+                {'role': 'user', 'content': f'Extract recommendations out of this paper: {input_text}'}
             ],
             tools=tools,
-            temperature=0.4
+            # Not yet tested in detail (TODO), but th assumption is:
+            # set top_p low to get more accurate results and prevent from getting too many (redundant) recommendations and hallucinations
+            # keep temperature high to get more creative expressions, but not too high to prevent from deviating too much from the input text
+            temperature=0.7,
+            top_p=0.1
         )
     except KeyError as e:
         raise KeyError(f"Keyerror: {e}")
