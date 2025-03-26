@@ -30,7 +30,7 @@ logger.add(sys.stdout, level="INFO")
 
 # Create DB connection pool
 # URL that points to the database ...//username:password@host:port/database
-DATABASE_URL = "mariadb+mariadbconnector://root:rootpw@localhost:3306/copy_fellmann"
+DATABASE_URL = os.getenv("DATABASE_URL")
 # Engine for connection pool
 logger.info("Initializing database connection pool")
 try:
