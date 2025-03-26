@@ -123,39 +123,42 @@ def insert_into_db(
     rows = recommendations.to_dict(orient="records")
     try:
         from app import SessionLocal
+        session : Session = SessionLocal()
     except ImportError:
         logger.error("SessionLocal not found!")
         return None
-    # Try to insert recommendations and there corresponding embeddings
-    try: # TODO seperate into more try-except blocks
-        # Create session
-        session : Session = SessionLocal()
-        # Bulk insert recommendations
-        session.execute(insert(Recommendation), rows)
-        logger.debug("Successfully inserted recommendations into the database.")
-        # Query 'id' and 'short_desc' of inserted recommendations
-        result = session.execute(text("SELECT id, short_desc FROM recommendation WHERE id >= LAST_INSERT_ID()"))
-        result = [tuple(row) for row in result.fetchall()]
-        short_descs = [row[1] for row in result]
+    # Bulk insert recommendations
+    session.execute(insert(Recommendation), rows)
+    logger.info("Successfully inserted recommendations into the database.")
+    # Query 'id' and 'short_desc' of inserted recommendations
+    result = session.execute(text("SELECT id, short_desc FROM recommendation WHERE id >= LAST_INSERT_ID()"))
+    result = [tuple(row) for row in result.fetchall()]
+    short_descs = [row[1] for row in result]
+    try:
         # Extract embeddings
         emb = embedding(model='text-embedding-ada-002', input=short_descs)
         emb = [e["embedding"] for e in emb["data"]] # cut off metadata from response
-        logger.debug("Successfully extracted embeddings.")
-        # Prepare the embeddings for sqlalchemy bulk insertion
-        embeddings_data = [
-            {"id": int(row[0]), "emb": json.dumps(emb[i])} for i, row in enumerate(result)
-        ]
-        # Build and execute the insert statement
-        stmt = insert(Embedding).values(
-            id=text(":id"),
-            emb=text("Vec_FromText(:emb)")
-        )
+        logger.info(f"Successfully extracted embeddings for {len(emb)} recommendations.")
+        #logger.info("Successfully extracted embeddings.")
+    except Exception as e:
+        logger.error(f"Error while extracting embeddings: {e}")
+        return None
+    # Prepare the embeddings for sqlalchemy bulk insertion
+    embeddings_data = [
+        {"id": int(row[0]), "emb": json.dumps(emb[i])} for i, row in enumerate(result)
+    ]
+    # Build and execute the insert statement
+    stmt = insert(Embedding).values(
+        id=text(":id"),
+        emb=text("Vec_FromText(:emb)")
+    )
+    try:
         session.execute(stmt, embeddings_data)
         logger.debug("Successfully inserted embeddings into the database.")
         session.commit()
         logger.debug("Committed the transaction.")
         logger.info("Upload completed.")
-        # Return List of ids of inserted recommendations
+    # Return List of ids of inserted recommendations
     except mariadb.Error as e:
         if e.errno == 1146:
             raise Exception("Table does not exist!")
@@ -227,46 +230,6 @@ def find_similarities(
     hdb_table.columns = ["id", "tip", "cluster"]
 
     return agg_table.sort_values(by='cluster').reset_index(drop=True), hdb_table.sort_values(by='cluster').reset_index(drop=True)
-
-@app.command()
-def find_similarities_command(
-    threshold: Optional[float] = typer.Option(
-        4, help="Threshold for clustering. Set to 4, if not specified")
-):
-    """Find tips that are semantically similar."""
-
-    user = "root"
-    password = "rootpw"
-    host = "localhost"
-    port = 3306
-    database = "copy_fellmann"
-    table = "recommendation"
-    try:
-        connection = mariadb.connect(
-            user=user,
-            password=password,
-            host=host,
-            port=port,
-            database=database
-        )
-        logger.info("Connection successful!")
-    except mariadb.Error as e:
-        print(f"Error connecting to MariaDB: {e}")
-        sys.exit(1)
-
-    agg_clusters, hdb_clusters = find_similarities(connection,table, threshold)
-
-    print("AGGLOMERATIVE CLUSTERING")
-    print("######################################################################")
-    print(agg_clusters)
-    print("######################################################################")
-    print()
-    print("HDBSCAN")
-    print("######################################################################")
-    print(hdb_clusters)
-    print("######################################################################")
-
-
 
 @app.command()
 def insert_data_from_csv(csv_file_path: str = typer.Argument(..., help="Path to csv file")):
