@@ -3,9 +3,9 @@ channels:
   - conda-forge
 dependencies:
   - python=3.11.10
-  - mariadb-connector-c
-  - gcc_linux-64  # LINUX (Needed for compiling C extensions)
-  - gxx_linux-64  # LINUX (C++ Compiler)
+  - mariadb>=1.1.12 # 1.1.12 is not yet available for apple silicon via conda-forge
+  #- gcc_linux-64  # LINUX (Needed for compiling C extensions)
+  #- gxx_linux-64  # LINUX (C++ Compiler)
   - make  # Needed for compilation
   - pathlib
   - pandas
@@ -21,7 +21,6 @@ dependencies:
   - hdbscan
   - sqlalchemy
   - pip:
-    - mariadb>=1.1.12
     - unstructured[pdf]
     - just-agents
     - sentence-transformers
