@@ -5,7 +5,7 @@ services:
     ports:
       - "8050:8050"
     environment:
-      - DATABASE_URL=mariadb+mariadbconnector://thrams:addyaddy2020%%@tessa.gg01.local:3306/copy_fellmann
+      - DATABASE_URL=mariadb+mariadbconnector://root:rootpw@localhost:3306/copy_fellmann
     depends_on:
       mariadb:
         condition: service_started
@@ -19,7 +19,7 @@ services:
     ports:
       - "3306:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: addyaddy2020%%
+      MYSQL_ROOT_PASSWORD: rootpw
       MYSQL_DATABASE: copy_fellmann
     volumes:
       - mariadb_data:/var/lib/mysql
