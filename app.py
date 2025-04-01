@@ -465,7 +465,7 @@ def start_gui():
         
         
         # Run server with absolute minimum configuration
-        app.run_server(
+        app.run(
             host=host,
             port=8050,
             debug=False,
