@@ -13,12 +13,12 @@ To set up your keys just fill in `.env` like it is done in [.env.template](/.env
 **2. Set up URL to your Database**
 Fill in the DATABASE_URL field in your `.env` following [SQLAlchemy's convention](https://docs.sqlalchemy.org/en/20/core/engines.html#:~:text=various%20backends%20available.-,Database%20URLs%C2%B6,-The%20create_engine()).
 
-**2. Feed your papers.** 
+**3. Feed your papers.** 
 To hand in your scientific papers just select them via the drag-and-drop field in the 'Extraction' view. It is recommended to not upload too many documents at once since you will probably lose track of them. Start with 1-2 papers to see how it works.
 
-**3. Choose a model.** The only model that is currently supported is OpenAIs GPT-4o-mini. Depending on requirements, more models will be added. Be sure to provide the required keys for the chosen model.
+**4. Choose a model.** The only model that is currently supported is OpenAIs GPT-4o-mini. Depending on requirements, more models will be added. Be sure to provide the required keys for the chosen model.
 
-**4. Generate!** Click on *Generate Recommendations* and the model will analyze what you have given towards it. 
+**5. Generate!** Click on *Generate Recommendations* and the model will analyze what you have given towards it. 
 
 ## 📅 Output Table
 | **Field** | **Describtion** |
