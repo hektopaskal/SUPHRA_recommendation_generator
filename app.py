@@ -128,63 +128,19 @@ app.layout = [
                 html.Div([
                     html.H3("Database Connection Settings",
                             style={"margin-bottom": "15px"}),
-                    # User Input
-                    html.Div([
-                        html.Label("User:"),
-                        dcc.Input(id="db-input-user", type="text",
-                                  placeholder="Enter username", style={"width": "100%"}),
-                    ], style={"margin-left": "20px", "margin-bottom": "10px", "width": "30vw"}),
-
-                    # Password Input
-                    html.Div([
-                        html.Label("Password:"),
-                        dcc.Input(id="db-input-password", type="password",
-                                  placeholder="Enter password", style={"width": "100%"}),
-                    ], style={"margin-left": "20px", "margin-bottom": "10px", "width": "30vw"}),
-
-                    # Host Input
-                    html.Div([
-                        html.Label("Host:"),
-                        dcc.Input(id="db-input-host", type="text",
-                                  placeholder="Enter host (e.g., localhost)", style={"width": "100%"}),
-                    ], style={"margin-left": "20px", "margin-bottom": "10px", "width": "30vw"}),
-
-                    # Port Input
-                    html.Div([
-                        html.Label("Port:"),
-                        dcc.Input(id="db-input-port", type="number", value="",
-                                  placeholder="Enter port (e.g., 3306)", style={"width": "100%"}),
-                    ], style={"margin-left": "20px", "margin-bottom": "10px", "width": "30vw"}),
-
-                    # Database Input
-                    html.Div([
-                        html.Label("Database:"),
-                        dcc.Input(id="db-input-database", type="text",
-                                  placeholder="Enter database name", style={"width": "100%"}),
-                    ], style={"margin-left": "20px", "margin-bottom": "10px", "width": "30vw"}),
-
-                    # Table Input
-                    html.Div([
-                        html.Label("Table:"),
-                        dcc.Input(id="db-input-table", type="text",
-                                  placeholder="Enter table name", style={"width": "100%"}),
-                    ], style={"margin-left": "20px", "margin-bottom": "10px", "width": "30vw"}),
-
-                    # Connect Button
-                    html.Button("Connect", id="db-connect-button",
-                                n_clicks=0, style={"margin-left": "20px", "margin-top": "10px"}),
-
+                    html.H4("Currently connected to: ",
+                            style={"margin-bottom": "15px"}),
+                    # Display test_pool_connection() result
+                    html.Div(id="connection-status",
+                         children=[], style={"margin-left": "20px"}),
                     # Display test_db_connection() result
                     html.Div(id="test-db-connection-result",
-                             children=[], style={"margin-left": "20px"})
-                ], style={'width': '45%', 'display': 'inline-block', 'verticalAlign': 'top'}),
-                # Test Connect Button
-                html.Button("Test", id="pool-connect-button",
+                             children=[], style={"margin-left": "20px"}),
+                    # Test Connect Button
+                    html.Button("Test", id="pool-connect-button",
                             n_clicks=0, style={"margin-left": "20px", "margin-top": "10px"}),
-                # Display test_pool_connection() result
-                html.Div(id="test-pool-connection-result",
-                         children=[], style={"margin-left": "20px"})
-            ], style={'width': '45%', 'display': 'inline-block', 'verticalAlign': 'top'}),
+                ], style={'width': '45%', 'display': 'inline-block', 'verticalAlign': 'top', 'horizontalAlign': 'center'}),
+            ], style={'width': '45%', 'display': 'inline-block', 'verticalAlign': 'top', 'horizontalAlign': 'center'}),
         ]
     ),
 ]
@@ -330,7 +286,7 @@ def open_debug_table(n_clicks):
 # ###########################################################################################################
 
 
-@callback(Output("browsing-div", "children"),
+@callback(Output("sim-table-div", "children"),
           Input("browse-database-button", "n_clicks"),
           prevent_initial_call=True)
 def browse_database(n_clicks):
@@ -338,10 +294,12 @@ def browse_database(n_clicks):
     Funct: Button: Browse Database
     """
     if SessionLocal is None:
+        logger.error('SessionLocal is None!')
         return html.Div("Database connection not available!")
         
     session = SessionLocal()
     try:
+        logger.info('Open table for browsing.')
         result = session.execute(
             text("SELECT * FROM recommendation")).fetchall()
         df = pd.DataFrame(result)
@@ -363,6 +321,7 @@ def browse_database(n_clicks):
         )
         return table
     except Exception as e:
+        logger.error('Open table for browsing failed!')
         return f"Error while browsing database: {e}"
     finally:
         session.close()
@@ -434,7 +393,7 @@ def search_similarities(n_clicks, rows, selection):
     # Database View
 # ###########################################################################################################
 
-@callback(Output("test-pool-connection-result", "children"),
+@callback(Output("connection-status", "children"),
           Input("pool-connect-button", "n_clicks"),
           prevent_initial_call=True)
 def test_db_connection(n_clicks):
@@ -446,6 +405,7 @@ def test_db_connection(n_clicks):
         
     session = SessionLocal()
     try:
+        logger.info('Try to connect to ')
         result = session.execute(
             text("SELECT COUNT(*) FROM recommendation")).fetchone()
         return f"Pool connection successful: {result}"
