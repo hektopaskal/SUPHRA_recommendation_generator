@@ -10,6 +10,9 @@ A tool to extract, upload, and maintain productivity and health recommendations 
 To generate recommendations you necessarily need to add an [OpenAi API key](https://openai.com/index/openai-api/), since OpenAi´s GPT models are the only supported models so far. A [Semantic Scholar API](https://www.semanticscholar.org/product/api) is also required for usage.
 To set up your keys just fill in `.env` like it is done in [.env.template](/.env.template).
 
+**2. Set up URL to your Database**
+Fill in the DATABASE_URL field in your `.env` following [SQLAlchemy's convention](https://docs.sqlalchemy.org/en/20/core/engines.html#:~:text=various%20backends%20available.-,Database%20URLs%C2%B6,-The%20create_engine()).
+
 **2. Feed your papers.** 
 To hand in your scientific papers just select them via the drag-and-drop field in the 'Extraction' view. It is recommended to not upload too many documents at once since you will probably lose track of them. Start with 1-2 papers to see how it works.
 
