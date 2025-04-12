@@ -14,7 +14,7 @@ from typing import Optional, List
 
 from loguru import logger
 # semanticscholar library (unofficial) TODO just use requests library?
-from semanticscholar import SemanticScholar, Paper, SemanticScholarException
+from semanticscholar import SemanticScholar, Paper
 
 from .generate import generate_recommendations_from_file
 from .pdf_extraction import convert_pdf, get_doi
