@@ -4,12 +4,6 @@ from pathlib import Path
 from dotenv import load_dotenv
 import shutil
 
-#from getpaper.parse import try_parse_paper, PDFParser
-#from langchain_community.document_loaders import PDFMinerLoader
-
-from pdf2image import convert_from_path
-#import pytesseract
-
 from unstructured.partition.pdf import partition_pdf
 
 from semanticscholar import SemanticScholar

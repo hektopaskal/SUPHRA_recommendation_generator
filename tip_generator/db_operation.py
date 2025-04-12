@@ -1,31 +1,16 @@
-import mariadb
-from mariadb import Connection
 from sqlalchemy import text, insert
 from sqlalchemy.orm import Session
-from sqlalchemy.types import TypeDecorator, String
+from sqlalchemy.types import String
 from sqlalchemy import Column, Integer, String, Text
 from sqlalchemy.dialects.mysql import SET, ENUM, TINYINT, YEAR
 from sqlalchemy.ext.declarative import declarative_base
 
 import sys
 import pandas as pd
-from pathlib import Path
 import json
 
 import typer
-from typing import Optional
 from loguru import logger
-import traceback
-
-# for similarity search with sentence embedding:
-from sentence_transformers import SentenceTransformer
-from sklearn.cluster import AgglomerativeClustering
-import hdbscan
-
-from scipy.cluster.hierarchy import dendrogram, linkage
-import matplotlib.pyplot as plt
-import numpy as np
-from collections import Counter
 
 from litellm import embedding
 
@@ -94,25 +79,6 @@ class Embedding(Base):
     emb = Column(Text)  # VECTOR(1536)
 
 
-# Connect to MariaDB
-def connect_to_db(
-    login: dict
-)-> Connection:
-    try:
-        conn = mariadb.connect(
-            user=login["user"],
-            password=login["password"],
-            host=login["host"],  # or 127.0.0.1
-            port=login["port"],  # default mariadb port
-            database=login["database"]
-        )
-        logger.info("Successfully connected to the database.")
-        return conn
-    except mariadb.Error as e:
-        logger.error(f"Error while connecting to the database: {e}")
-        return None
-
-
 def insert_into_db(
         recommendations: pd.DataFrame
 ):
@@ -159,98 +125,13 @@ def insert_into_db(
         logger.debug("Committed the transaction.")
         logger.info("Upload completed.")
     # Return List of ids of inserted recommendations
-    except mariadb.Error as e:
-        if e.errno == 1146:
-            raise Exception("Table does not exist!")
-        else:
-            raise Exception(f"DB-Operation: Error while inserting data: {e}")
+    except Exception as e:
+        raise Exception(f"DB-Operation: Error while inserting data: {e}")
     finally:
         session.close()
         logger.debug("Closed cursor after insert operation.")
 
 # Delete recommendations by their ID? TODO
-
-
-# Find similar recommendations via sentence embeddings
-def find_similarities(
-        conn: Connection,
-        table: str,
-        th: int #treshold for semantic similarity clustering
-):
-    model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
-
-    cursor = conn.cursor()
-    cursor.execute(f"SELECT id, short_desc FROM {table}")
-    table = cursor.fetchall() #comes as list of tuples(=rows)
-    tabledf = pd.DataFrame(table)
-    embeddings = model.encode(tabledf[1].to_list()) # extract tips scince id is not supposed to be embedded
-
-
-    print()
-    print(tabledf)
-    print()
-
-    # Perform Agglomerative Clustering
-    agg_clustering = AgglomerativeClustering(
-        n_clusters=None, distance_threshold=th, linkage='ward')
-    
-    agg_table = pd.DataFrame(tabledf)
-    print("AGGTABLE")
-    print(agg_table)
-    print()
-
-
-    print("TABLEDF")
-    print(tabledf)
-    print()
-    print("#####################################################################")
-    agg_table[2] = agg_clustering.fit_predict(embeddings)
-
-    print("AGGTABLE")
-    print(agg_table)
-    print()
-
-
-    print("TABLEDF")
-    print(tabledf)
-    print()
-    agg_table.columns = ["id", "tip", "cluster"]
-    #grouped_df = tabledf.sort_values(by='cluster').reset_index(drop=True)
-
-    # Perform HDBSCAN CLUSTERING
-    hdb_clustering = hdbscan.HDBSCAN(min_cluster_size=2, min_samples=1)
-    hdb_clustering.fit(embeddings)
-    hdb_table = pd.DataFrame(tabledf)
-    hdb_table[2] = hdb_clustering.labels_
-
-    print("HDBTABLE")
-    print(hdb_table)
-    print()
-
-    hdb_table.columns = ["id", "tip", "cluster"]
-
-    return agg_table.sort_values(by='cluster').reset_index(drop=True), hdb_table.sort_values(by='cluster').reset_index(drop=True)
-
-@app.command()
-def insert_data_from_csv(csv_file_path: str = typer.Argument(..., help="Path to csv file")):
-    """Give Path to csv_file and insert data from a CSV file into MariaDB."""
-
-    connection = 0
-    cursor = connection.cursor()
-
-    df = pd.read_csv(csv_file_path)
-    df = df.astype(str)
-
-    for _, row in df.iterrows():  # _ is index
-        sql_query = "INSERT INTO pt_recommendations (Tip, Information, Category, Goal, Focus, Activity_type, Daytime, Weekday, Validity_Flag, Weather, Concerns, AuthorsPaperCountCitationCount, citationCount, fieldsOfStudy, influentialCitationCount, publicationDate, publicationTypes, publicationVenue, referenceCount, title, tldr, url) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-        cursor.execute(sql_query, tuple(row))
-
-    connection.commit()
-    cursor.close()
-    connection.close()
-
-    logger.info("Data inserted successfully!")
-
 
 # run typer app
 if __name__ == "__main__":
