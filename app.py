@@ -8,7 +8,6 @@ from typing import Optional
 import sys
 from loguru import logger
 
-from mariadb import Connection
 from sqlalchemy import create_engine, text, bindparam
 from sqlalchemy.orm import sessionmaker
 
@@ -17,7 +16,7 @@ import pandas as pd
 import plotly.express as px
 
 from tip_generator.pipeline import pdf_to_tips
-from tip_generator.db_operation import connect_to_db, insert_into_db
+from tip_generator.db_operation import insert_into_db
 
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
@@ -125,21 +124,11 @@ app.layout = [
             # ###########################################################################################################
             # DATABASE VIEW
             dcc.Tab(label="Connect to DB", children=[
-                html.Div([
-                    html.H3("Database Connection Settings",
-                            style={"margin-bottom": "15px"}),
-                    html.H4("Currently connected to: ",
-                            style={"margin-bottom": "15px"}),
-                    # Display test_pool_connection() result
-                    html.Div(id="connection-status",
-                         children=[], style={"margin-left": "20px"}),
-                    # Display test_db_connection() result
-                    html.Div(id="test-db-connection-result",
-                             children=[], style={"margin-left": "20px"}),
-                    # Test Connect Button
-                    html.Button("Test", id="pool-connect-button",
-                            n_clicks=0, style={"margin-left": "20px", "margin-top": "10px"}),
-                ], style={'width': '45%', 'display': 'inline-block', 'verticalAlign': 'top', 'horizontalAlign': 'center'}),
+                html.H3("Database Connection Settings", style={"margin-bottom": "15px"}),
+                # Test Connect Button
+                html.Button("Test", id="pool-connect-button", n_clicks=0, style={"margin-left": "20px", "margin-top": "10px"}),
+                # Display test_pool_connection() result
+                html.Div(id="pool-connect-result", children=[], style={"margin-left": "20px"}),
             ], style={'width': '45%', 'display': 'inline-block', 'verticalAlign': 'top', 'horizontalAlign': 'center'}),
         ]
     ),
@@ -177,8 +166,9 @@ def update_output_table(n_clicks, contents, filenames, claim, model):
             content_type, content_string = content.split(",")
             file_data = base64.b64decode(content_string)
 
-            # Save the file to the output directory
+            # Create output folder if it does not already exist
             output_path = Path("data/temp")
+            output_path.mkdir(exist_ok=True)
             # Create the output folder regarding the pdf file
             output_path = output_path / filename
             # output_path = os.path.join(Path("data/temp"), filename)
@@ -218,17 +208,16 @@ def update_output_table(n_clicks, contents, filenames, claim, model):
           Input("apply-button", "n_clicks"),
           State("table", "selected_rows"),
           State("table", "data"),
-          State("db-input-table", "value"),
           prevent_initial_call=True,)
-def apply_to_db(n_clicks, selection, all_rows, table):
+def apply_to_db(n_clicks, selection, all_rows):
     """
     Funct: Button: Apply to DB
     TODO: Keep recs in UI if upload to DB fails ! IMPORTANT !
     """
+    logger.info("Apply to Database")
     # Check if database connection is available
     if SessionLocal is None:
         return all_rows, selection, ["Database connection not available!"]
-        
     # seperate selected rows
     sel_rows = pd.DataFrame()
     updated_rows = pd.DataFrame()
@@ -286,7 +275,7 @@ def open_debug_table(n_clicks):
 # ###########################################################################################################
 
 
-@callback(Output("sim-table-div", "children"),
+@callback(Output("browsing-div", "children"),
           Input("browse-database-button", "n_clicks"),
           prevent_initial_call=True)
 def browse_database(n_clicks):
@@ -296,7 +285,6 @@ def browse_database(n_clicks):
     if SessionLocal is None:
         logger.error('SessionLocal is None!')
         return html.Div("Database connection not available!")
-        
     session = SessionLocal()
     try:
         logger.info('Open table for browsing.')
@@ -340,7 +328,6 @@ def search_similarities(n_clicks, rows, selection):
     """
     if SessionLocal is None:
         return html.Div("Database connection not available!")
-        
     if not selection:
         return html.Div("No rows selected.")
     else:
@@ -349,25 +336,26 @@ def search_similarities(n_clicks, rows, selection):
         # get indices (or more likely ids) of selected rows (considering sorting and filtering)
         selected_df = data.iloc[selection]
         # db-id of selected row (corresponds to vector id)
-        v_id = selected_df["id"].tolist()[0] 
+        v_id = selected_df["id"].tolist()[0]
         logger.info(f"Selected rows: {selected_df['id'].tolist()[0]}")
-        
+
         try:
             session = SessionLocal()
             # get 3 most similar recommendations from database (euclidean distance)
-            result = session.execute(text("SELECT id FROM emb_ada002 ORDER BY VEC_DISTANCE_EUCLIDEAN(emb, (SELECT emb FROM emb_ada002 WHERE id = :v_id)) LIMIT 3;"), [{"v_id": str(v_id)}])
+            result = session.execute(text(
+                "SELECT id FROM emb_ada002 ORDER BY VEC_DISTANCE_EUCLIDEAN(emb, (SELECT emb FROM emb_ada002 WHERE id = :v_id)) LIMIT 3;"), [{"v_id": str(v_id)}])
             # get result as list
             result = [r[0] for r in result.fetchall()]
             # get recommendations from db
             stmt = text("SELECT * FROM recommendation WHERE id IN :ids").bindparams(bindparam("ids", expanding=True))
-
+            
             result = session.execute(stmt, {"ids": result}).fetchall()
             df = pd.DataFrame(result)
             table = dash_table.DataTable(
                 id='sim-table',
                 data=df.to_dict("records"),
                 columns=[{'id': i, 'name': i} for i in df.columns],
-                style_table={'overflowX': 'auto'},  # enables horizontal scrolling
+                style_table={'overflowX': 'auto'}, # enables horizontal scrolling
                 style_cell={'textAlign': 'left'},
                 editable=True,
                 sort_action="native",
@@ -388,12 +376,11 @@ def search_similarities(n_clicks, rows, selection):
             session.close()
 
 
-
 # ###########################################################################################################
     # Database View
 # ###########################################################################################################
 
-@callback(Output("connection-status", "children"),
+@callback(Output("pool-connect-result", "children"),
           Input("pool-connect-button", "n_clicks"),
           prevent_initial_call=True)
 def test_db_connection(n_clicks):
@@ -422,7 +409,6 @@ def start_gui():
         # Get host from environment or use default - FORCE 0.0.0.0 for Docker
         host = "0.0.0.0"  # Always use 0.0.0.0 in Docker
         logger.info(f"Using host: {host}")
-        
         
         # Run server with absolute minimum configuration
         app.run(
