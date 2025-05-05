@@ -1,24 +1,32 @@
-from sqlalchemy import text, insert
-from sqlalchemy.orm import Session
+import pandas as pd
+from sentence_transformers import SentenceTransformer
+import json
+
+# from litellm import embedding
+
+from sqlalchemy import text, insert, bindparam
+from sqlalchemy.orm import Session, declarative_base
 from sqlalchemy.types import String
 from sqlalchemy import Column, Integer, String, Text
 from sqlalchemy.dialects.mysql import SET, ENUM, TINYINT, YEAR
-from sqlalchemy.ext.declarative import declarative_base
 
 import sys
-import pandas as pd
-import json
+from dotenv import load_dotenv
+import os
+# load environment variables
+load_dotenv()
+EMB_TABLE = os.environ.get("EMB_TABLE")
+OPENS_EMB_MODEL = os.environ.get("OPENS_EMB_MODEL")
 
 import typer
 from loguru import logger
-
-from litellm import embedding
 
 # initialize typer and loguru
 app = typer.Typer()
 logger.remove()
 logger.add(sys.stdout, level="INFO")
 
+# SQLAlchemy ORM model
 
 Base = declarative_base()
 
@@ -73,7 +81,7 @@ class Embedding(Base):
     """
     SQLAlchemy model for the embeddings table.
     """
-    __tablename__ = "emb_ada002"
+    __tablename__ = EMB_TABLE
 
     id = Column(Integer, primary_key=True)
     emb = Column(Text)  # VECTOR(1536)
@@ -82,9 +90,9 @@ class Embedding(Base):
 def insert_into_db(
         recommendations: pd.DataFrame
 ):
-    """
-    Inserts recommendations that are stored in pandas DataFrame with already matching column names!
-    """
+    
+    #Inserts recommendations that are stored in pandas DataFrame with already matching column names!
+    
     # build insertion statement
     rows = recommendations.to_dict(orient="records")
     try:
@@ -100,6 +108,9 @@ def insert_into_db(
     result = session.execute(text("SELECT id, short_desc FROM recommendation WHERE id >= LAST_INSERT_ID()"))
     result = [tuple(row) for row in result.fetchall()]
     short_descs = [row[1] for row in result]
+
+    """
+    # Calculate embeddings with ada002 OpenAI model
     try:
         # Extract embeddings
         emb = embedding(model='text-embedding-ada-002', input=short_descs)
@@ -109,14 +120,32 @@ def insert_into_db(
     except Exception as e:
         logger.error(f"Error while extracting embeddings: {e}")
         return None
+    """
+    
+    # load local embedding model
+    try:
+        model = SentenceTransformer(OPENS_EMB_MODEL, trust_remote_code=True, device="cpu")
+        logger.info(f"{OPENS_EMB_MODEL} loaded successfully!")
+    except Exception as e:
+        logger.info(f"Error loading {OPENS_EMB_MODEL}: {e}")
+        return None
+    # calculate query vector
+    try:
+        emb = model.encode(short_descs, convert_to_tensor=True, device="cpu")
+        logger.info('Query text encoded successfully.')
+    except Exception as e:
+        logger.info(f"Error encoding query text: {e}")
+        return None
+
+    emb = emb.numpy().tolist()
     # Prepare the embeddings for sqlalchemy bulk insertion
     embeddings_data = [
         {"id": int(row[0]), "emb": json.dumps(emb[i])} for i, row in enumerate(result)
     ]
     # Build and execute the insert statement
     stmt = insert(Embedding).values(
-        id=text(":id"),
-        emb=text("Vec_FromText(:emb)")
+    id=bindparam("id"),
+    emb=bindparam("emb")
     )
     try:
         session.execute(stmt, embeddings_data)
