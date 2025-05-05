@@ -8,6 +8,7 @@ dependencies:
   - pip
   - gcc_linux-64  # LINUX (Needed for compiling C extensions)
   - gxx_linux-64  # LINUX (C++ Compiler)
+  - mariadb=1.12.1
   - make  # Needed for compilation
   - pathlib
   - pandas
