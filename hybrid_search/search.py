@@ -24,19 +24,18 @@ def find_matching_rec(query_text: str):
     headers = {"Content-Type": "application/json"}
     # load local embedding model
     try:
-        print(OPENS_EMB_MODEL)
         #model = AutoModel.from_pretrained(OPENS_EMB_MODEL, trust_remote_code=True)
         model = SentenceTransformer(OPENS_EMB_MODEL, trust_remote_code=True, device="cpu")
-        logger.info("Model loaded successfully!")
+        logger.info(f"{OPENS_EMB_MODEL} loaded successfully!")
     except Exception as e:
-        logger.info(f"Error loading model: {e}")
+        logger.info(f"Error loading {OPENS_EMB_MODEL}: {e}")
         return None
     # calculate query vector
     try:
         vector = model.encode([query_text], convert_to_tensor=True, device="cpu")
-        logger.info('Encoded successfully.')
+        logger.info('Query text encoded successfully.')
     except Exception as e:
-        logger.info(f"Error encoding embeddings: {e}")
+        logger.info(f"Error encoding query text: {e}")
         return None
 
     vector = vector.numpy().tolist()[0]
